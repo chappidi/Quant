@@ -10,13 +10,13 @@ namespace quant.core
     /// http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_average_convergence_divergence_macd
     /// MACD Line: (12-day EMA - 26-day EMA)
     /// </summary>
-    public class MACD
+    public class MACD : IIndicator<double>
     {
         EMA fast;
         EMA slow;
         public MACD(uint fastPeriod, uint slowPeriod) {
             if (fastPeriod >= slowPeriod)
-                throw new ArgumentException("Invalid Periods");
+                throw new ArgumentException("fast Period cannot be greater than slow Period");
             fast = new EMA(fastPeriod);
             slow = new EMA(slowPeriod);
         }
@@ -34,7 +34,7 @@ namespace quant.core
     /// http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:price_oscillators_ppo
     /// PPO Line: {(12-day EMA - 26-day EMA)/26-day EMA} x 100 = ((12-day EMA / 26-day EMA) - 1) * 100
     /// </summary>
-    public class PPO
+    public class PPO : IIndicator<double>
     {
         EMA fast;
         EMA slow;
@@ -42,6 +42,8 @@ namespace quant.core
         /// 
         /// </summary>
         public PPO(uint fastPeriod, uint slowPeriod) {
+            if (fastPeriod >= slowPeriod)
+                throw new ArgumentException("fast Period cannot be greater than slow Period");
             fast = new EMA(fastPeriod);
             slow = new EMA(slowPeriod);
         }
@@ -60,7 +62,7 @@ namespace quant.core
     /// Histogram<MACD> or Histogram<PPO>
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Histogram<T> where T : MACD
+    public class Histogram<T> where T : IIndicator<double>
     {
         T line;
         EMA signal;

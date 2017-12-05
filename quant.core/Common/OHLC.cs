@@ -25,6 +25,24 @@ namespace quant.common
         public uint Count { get; private set; }
         public double VWAP { get; private set; }
         /// <summary>
+        /// High to Low
+        /// </summary>
+        public double Range {
+            get {
+                return _high.Price - _low.Price;
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prev"></param>
+        /// <returns></returns>
+        public double TR(OHLC prev) {
+            double high_prevclose = Math.Abs(this._high.Price - prev._close.Price);
+            double low_prevclose = Math.Abs(this._low.Price - prev._close.Price);
+            return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
+        }
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="tck"></param>

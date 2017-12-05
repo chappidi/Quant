@@ -215,7 +215,7 @@ namespace quant.core.test
         {
             MACD macd = new MACD(12,26);
             EMA signal = new EMA(9);
-            Histogram<MACD> hist = new Histogram<MACD>(9, () => new MACD(12, 26));
+            var hist = new Histogram<MACD>(9, () => new MACD(12, 26));
             double[] data = { 459.99, 448.85, 446.06, 450.81, 442.8, 448.97,
                 444.57, 441.4, 430.47, 420.05, 431.14, 425.66, 430.58, 431.72,
                 437.87, 428.43, 428.35, 432.5, 443.66, 455.72, 454.49, 452.08, 452.73,

@@ -16,8 +16,7 @@ namespace quant.rx
         {
             return Observable.Create<double>(obs => {
                 var ema = new EMA(period);
-                return source.Subscribe(
-                    (val) => {
+                return source.Subscribe( (val) => {
                         var retVal = ema.Calc(val);
                         if (!double.IsNaN(retVal))
                             obs.OnNext(retVal);
@@ -34,8 +33,7 @@ namespace quant.rx
         {
             return Observable.Create<double>(obs => {
                 var ema = new WSMA(period);
-                return source.Subscribe(
-                    (val) => {
+                return source.Subscribe( (val) => {
                         var retVal = ema.Calc(val);
                         if (!double.IsNaN(retVal))
                             obs.OnNext(retVal);

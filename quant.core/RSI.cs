@@ -32,6 +32,7 @@ namespace quant.core
         /// <param name="val"></param>
         /// <returns></returns>
         public double Calc(double val) {
+            //edge condition
             if (double.IsNaN(val))
                 return double.NaN;
 

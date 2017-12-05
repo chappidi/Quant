@@ -37,6 +37,8 @@ namespace quant.core
         /// <returns></returns>
         public double Calc(double input) {
             //edge condition
+            if (double.IsNaN(input))
+                return double.NaN;
             if (Period == 1) return input;
 
             // buffer not full

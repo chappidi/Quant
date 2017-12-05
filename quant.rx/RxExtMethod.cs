@@ -26,5 +26,13 @@ namespace quant.rx
                     }, obs.OnError, obs.OnCompleted);
             });
         }
+        public static IObservable<double> MACD(this IObservable<double> source, uint fastPeriod, uint slowPeriod)
+        {
+            return null;
+        }
+        public static IObservable<double> PPO(this IObservable<double> source, uint fastPeriod, uint slowPeriod)
+        {
+            return null;
+        }
     }
 }

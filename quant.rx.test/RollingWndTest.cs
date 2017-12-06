@@ -28,5 +28,12 @@ namespace quant.rx.test
             double[] items = { 27, 19, 08, 17, 18, 13, 23, 43, 24, 29, 15, 39, 38, 61, 36 };
             items.ToObservable().Max(3).Subscribe(x => Trace.WriteLine(x));
         }
+        [TestMethod]
+        public void SMATest()
+        {
+            double[] items = { 27, 19, 08, 17, 18, 13, 23, 43, 24, 29, 15, 39, 38, 61, 36 };
+//            double[] items = { 22.27, 22.19, 22.08, 22.17, 22.18, 22.13, 22.23, 22.43, 22.24, 22.29, 22.15, 22.39, 22.38, 22.61 };
+            items.ToObservable().SMA(3).Subscribe(x => Trace.WriteLine(x));
+        }
     }
 }

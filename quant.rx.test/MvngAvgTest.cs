@@ -1,7 +1,7 @@
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reactive.Subjects;
 using System.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reactive.Linq;
 
 namespace quant.rx.test

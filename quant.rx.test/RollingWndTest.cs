@@ -35,5 +35,22 @@ namespace quant.rx.test
 //            double[] items = { 22.27, 22.19, 22.08, 22.17, 22.18, 22.13, 22.23, 22.43, 22.24, 22.29, 22.15, 22.39, 22.38, 22.61 };
             items.ToObservable().SMA(3).Subscribe(x => Trace.WriteLine(x));
         }
+        [TestMethod]
+        public void VarianceTest_X()
+        {
+            double[] items = { 20, 22, 24, 25, 23, 26, 28, 26, 29, 27, 28, 30, 27, 29, 28 };
+            items.ToObservable().Buffer(3,1).Subscribe(x => {
+                Trace.WriteLine(x.StdDev());
+//                Trace.WriteLine(x.Variance());
+            });
+        }
+        [TestMethod]
+        public void VarianceTest()
+        {
+            double[] items = { 20, 22, 24, 25, 23, 26, 28, 26, 29, 27, 28, 30, 27, 29, 28 };
+            items.ToObservable().StdDev(3).Subscribe(x => {
+                Trace.WriteLine(x);
+            });
+        }
     }
 }

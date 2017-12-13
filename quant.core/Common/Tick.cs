@@ -22,5 +22,7 @@ namespace quant.common
         public DateTime Time { get; }
         public Aggressor Side { get; }
         public bool Live { get; }
+
+        public double PxVol => Price * Quantity;
     }
 }

@@ -96,7 +96,7 @@ namespace quant.rx
                             // find amount to reduce
                             uint diff = Vol - period;
                             // add back the difference
-                            que.AddFirst(new Tick(oldTck.Quantity - diff, oldTck.Price, oldTck.Time, oldTck.Side, oldTck.Live));
+                            que.AddFirst(new Tick("", oldTck.Quantity - diff, oldTck.Price, oldTck.Time, oldTck.Side, oldTck.Live));
                             // reduce the aggregate amounts
                             pxVol -= oldTck.Price * diff;
                             Vol -= diff;

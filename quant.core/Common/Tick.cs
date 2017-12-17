@@ -8,15 +8,17 @@ namespace quant.common
     /// <summary>
     /// 
     /// </summary>
-    public struct Tick
+    public class Tick
     {
-        public Tick(uint qty, double price, DateTime time, Aggressor side = Aggressor.NA, bool live = false) {
+        public Tick(string sym, uint qty, double price, DateTime time, Aggressor side = Aggressor.NA, bool live = false) {
+            Symbol = sym;
             Quantity = qty;
             Price = price;
             Side = side;
             Time = time;
             Live = live;
         }
+        public string Symbol { get; }
         public uint Quantity { get; }
         public double Price { get; }
         public DateTime Time { get; }

@@ -19,7 +19,7 @@ namespace quant.rx
             return File.ReadLines(file).ToObservable().Skip(1).Select(x =>
             {
                 var row = x.Replace("\"", "").Split(',');
-                return new Tick(uint.Parse(row[8]), double.Parse(row[7]), DateTime.Parse(row[3]));
+                return new Tick("", uint.Parse(row[8]), double.Parse(row[7]), DateTime.Parse(row[3]));
             });
         }
         /// <summary>
@@ -35,7 +35,7 @@ namespace quant.rx
                     if (ohlc == null || durationSelector(ohlc, tck)) {
                         if(ohlc != null)
                             obs.OnNext(ohlc);
-                        ohlc = new OHLC();
+                        ohlc = new OHLC(tck.Symbol);
                     }
                     ohlc.Add(tck);
                 }, obs.OnError, () => {
@@ -104,8 +104,8 @@ namespace quant.rx
                 // variables
                 double maxVal = double.MinValue;
                 double minVal = double.MaxValue;
-                var tk = new Tick();
-                var ohlc = new OHLC();
+                Tick tk = null;
+                var ohlc = new OHLC("");
 
                 return source.Select(tck => {
                     // capture tick which generates the mvwap
@@ -126,7 +126,7 @@ namespace quant.rx
                         // reset state
                         maxVal = double.MinValue;
                         minVal = double.MaxValue;
-                        ohlc = new OHLC();
+                        ohlc = new OHLC(tk.Symbol);
                     }
 //                    Trace.WriteLine($"{x.ToString("0.000")}\t{tk.Time}\t{tk.Quantity}\t{tk.Price}");
                 }, obs.OnError, () => {

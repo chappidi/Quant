@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace quant.common
@@ -24,6 +25,7 @@ namespace quant.common
         public uint Volume { get; private set; }
         public uint Count { get; private set; }
         public double VWAP { get; private set; }
+        public string Symbol { get; }
         /// <summary>
         /// High to Low
         /// </summary>
@@ -42,11 +44,15 @@ namespace quant.common
             double low_prevclose = Math.Abs(this._low.Price - prev._close.Price);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
+        public OHLC(string sym) {
+            Symbol = sym;
+        }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="tck"></param>
         public void Add(Tick tck)   {
+            Debug.Assert(Symbol == tck.Symbol);
             // open
             if (Count == 0) {
                 _open.Time = tck.Time;

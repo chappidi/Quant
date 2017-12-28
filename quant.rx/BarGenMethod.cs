@@ -14,6 +14,25 @@ namespace quant.rx
         static TimeZoneInfo est = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
         public static DateTime ToEST(this DateTime utc) => TimeZoneInfo.ConvertTime(utc, est);
 
+        public static IEnumerable<IList<OHLC>> OHLCFromCSV(string file)
+        {
+            var idx = 0;
+            IList<OHLC> retVal = new List<OHLC>();
+            foreach(var ln in File.ReadLines(file))
+            {
+                var row = ln.Replace("\"", "").Split(',');
+                if(idx != int.Parse(row[0]))
+                {
+                    if(retVal.Count > 0)
+                        yield return retVal;
+                    idx = int.Parse(row[0]);
+                    retVal = new List<OHLC>();
+                }
+                var ohlc = new OHLC(row);
+                retVal.Add(ohlc);
+            }
+        }
+
         public static IObservable<Tick> FromCSV(string file)
         {
             return File.ReadLines(file).ToObservable().Skip(1).Select(x =>

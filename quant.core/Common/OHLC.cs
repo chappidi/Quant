@@ -10,6 +10,7 @@ namespace quant.common
     /// </summary>
     public class OHLC
     {
+        static string codes = "_FGHJKMNQUVXZ";
         /// <summary>
         /// 
         /// </summary>
@@ -26,6 +27,7 @@ namespace quant.common
         public uint Count { get; private set; }
         public double VWAP { get; private set; }
         public string Symbol { get; }
+        public int MonthCode { get; }
         /// <summary>
         /// High to Low
         /// </summary>
@@ -44,8 +46,28 @@ namespace quant.common
             double low_prevclose = Math.Abs(this._low.Price - prev._close.Price);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
+        /// <summary>
+        /// To Create from CSV
+        /// </summary>
+        /// <param name="data"></param>
+        public OHLC(string[] data)
+        {
+            Symbol = data[1];
+            MonthCode = (10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]);
+            _open.Time = DateTime.Parse(data[2]);
+            _open.Price = double.Parse(data[3]);
+            _high.Time = DateTime.Parse(data[4]);
+            _high.Price = double.Parse(data[5]);
+            _low.Time = DateTime.Parse(data[6]);
+            _low.Price = double.Parse(data[7]);
+            _close.Time = DateTime.Parse(data[8]);
+            _close.Price = double.Parse(data[9]);
+            Volume = uint.Parse(data[10]);
+            VWAP = double.Parse(data[11]);
+        }
         public OHLC(string sym) {
             Symbol = sym;
+            MonthCode = (10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]);
         }
         /// <summary>
         /// 

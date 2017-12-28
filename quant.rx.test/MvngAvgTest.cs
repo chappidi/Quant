@@ -33,6 +33,15 @@ namespace quant.rx.test
 //            items.ToObservable().EMA(10).Subscribe(x => { Trace.WriteLine(x.ToString("0.000")); });
         }
         [TestMethod]
+        public void FromCSVOHLC()
+        {
+            var srcObs = BarGenMethod.OHLCFromCSV(@"D:\GIT_DIR_VSTS\CL_OHLC_2017.txt");
+            var cc = srcObs.ToObservable().Continuous(1.2).EMA(10).Subscribe(x => Trace.WriteLine(x));
+            srcObs.ToObservable().Continuous(1.2).Subscribe(x => {
+                Trace.WriteLine($"{x.Item1.Close.Time}\t{x.Item1.Symbol}\t{x.Item1.Volume}\t{x.Item1.Close.Price - x.Item2.Close.Price}");
+            });
+        }
+        [TestMethod]
         public void FromCSVTest()
         {
 //            BarGenMethod.FromCSV(@"D:\GIT_DIR_VSTS\CC_TICK.txt").Bucket((x) => x.Time.Hour).OHLC().Subscribe(x => Trace.WriteLine($"OHLC:\t{x.Open.Time.ToEST()}\t{x.Close.Time.ToEST()}\tVOL:{x.Volume}"));
@@ -59,11 +68,10 @@ namespace quant.rx.test
         [TestMethod]
         public void FromCSVTest3()
         {
-            var srcObs = BarGenMethod.FromCSV(@"D:\GIT_DIR_VSTS\CC_TICK.txt").Publish();
-            var vwObs = srcObs.MVWAP(1500,20);
-            vwObs.Subscribe(x => Trace.WriteLine($"OHLC:\t{x.Open.Time.ToEST()}\t{x.Close.Time.ToEST()}\tVOL:{x.Volume}\t{x.High.Price - x.Low.Price}"));
+            var srcObs = BarGenMethod.FromCSV(@"D:\GIT_DIR_VSTS\CC_TICK.txt").ToList().Wait();
             var dtStart = DateTime.Now;
-            srcObs.Connect();
+            var vwObs = srcObs.ToObservable().MVWAP(1500,20);
+            vwObs.Subscribe(x => { /*Trace.WriteLine($"OHLC:\t{x.Open.Time.ToEST()}\t{x.Close.Time.ToEST()}\tVOL:{x.Volume}\t{x.High.Price - x.Low.Price}");*/ });
             Trace.WriteLine($"{(DateTime.Now - dtStart).TotalMilliseconds}");
         }
         [TestMethod]

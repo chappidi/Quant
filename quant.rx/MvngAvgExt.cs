@@ -249,13 +249,29 @@ namespace quant.rx
         /// <param name="source"></param>
         /// <param name="period"></param>
         /// <returns></returns>
-        public static IObservable<double> MVWAP(this IObservable<Tick> source, uint period) {
-
+        public static IObservable<double> MVWAP(this IObservable<Tick> source, uint period)
+        {
+            // maintain symbol offset
+            var symOff = new Dictionary<string, double>();
             return Observable.Create<double>(obs => {
-                var que = new LinkedList<Tick>();
+                LinkedList<Tick>  que = null;
                 double pxVol = 0;  // price * Vol
                 uint Vol = 0;   // volume
                 return source.Subscribe( (newTck) => {
+
+                    // initialization
+                    if(que == null) {
+                        que = new LinkedList<Tick>();
+                        symOff[newTck.Symbol] = 0;
+                    } else {
+                        double offset = (que.Last().Symbol != newTck.Symbol) ? (offset = newTck.Price - que.Last().Price) : 0;
+                        if (offset != 0) {
+                            foreach(var itm in symOff)
+                                symOff[itm.Key] = itm.Value + offset;       // change offsets
+                            symOff[newTck.Symbol] = 0;                      // add new element
+                            pxVol += Vol * offset;                          // update pxVol
+                        }
+                    }
 
                     que.AddLast(newTck);    // add to the end                    
                     pxVol += newTck.PxVol;  // add to the total sum and volume
@@ -266,18 +282,19 @@ namespace quant.rx
                         // remove  old value
                         var oldTck = que.First.Value;
                         que.RemoveFirst();
+                        var offset = symOff[oldTck.Symbol];
                         if (oldTck.Quantity + period > Vol) {
                             // find amount to reduce
                             uint diff = Vol - period;
                             // add back the difference
-                            que.AddFirst(new Tick("", oldTck.Quantity - diff, oldTck.Price, oldTck.Time, oldTck.Side, oldTck.Live));
+                            que.AddFirst(new Tick(oldTck.Symbol, oldTck.Quantity - diff, oldTck.Price, oldTck.Time, oldTck.Side, oldTck.Live));
                             // reduce the aggregate amounts
-                            pxVol -= oldTck.Price * diff;
+                            pxVol -= (oldTck.Price + offset) * diff;
                             Vol -= diff;
                         }
                         else {
                             // reduce the aggregate amounts
-                            pxVol -= oldTck.PxVol;
+                            pxVol -= (oldTck.Price + offset) * oldTck.Quantity;
                             Vol -= oldTck.Quantity;
                         }
                     }

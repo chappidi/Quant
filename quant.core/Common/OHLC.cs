@@ -40,10 +40,15 @@ namespace quant.common
         /// 
         /// </summary>
         /// <param name="prev"></param>
+        /// <param name="offset"></param>
         /// <returns></returns>
-        public double TR(OHLC prev) {
-            double high_prevclose = Math.Abs(this._high.Price - prev._close.Price);
-            double low_prevclose = Math.Abs(this._low.Price - prev._close.Price);
+        public double TR(OHLC prev, double offset = 0)
+        {
+            Debug.Assert((offset != 0) ? (prev.Symbol != this.Symbol) : true);
+            // adjusted for Roll.
+            double adj_prevClose = prev._close.Price + offset;
+            double high_prevclose = Math.Abs(this._high.Price - adj_prevClose);
+            double low_prevclose = Math.Abs(this._low.Price - adj_prevClose);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
         /// <summary>

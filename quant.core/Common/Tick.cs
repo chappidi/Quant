@@ -4,27 +4,33 @@ using System.Text;
 
 namespace quant.common
 {
-    public enum Aggressor { NA, Buy, Sell }
     /// <summary>
-    /// 
+    /// represents tick data of a given Security
     /// </summary>
     public class Tick
     {
-        public Tick(string sym, uint qty, double price, DateTime time, Aggressor side = Aggressor.NA, bool live = false) {
-            Symbol = sym;
+        public enum Aggressor { NA, Buy, Sell }
+        #region ctor
+        public Tick(Security sec, uint qty, uint price, DateTime time) {
+            Security = sec;
             Quantity = qty;
             Price = price;
-            Side = side;
             Time = time;
-            Live = live;
         }
-        public string Symbol { get; }
-        public uint Quantity { get; }
-        public double Price { get; }
-        public DateTime Time { get; }
-        public Aggressor Side { get; }
-        public bool Live { get; }
+        #endregion
 
+        #region properties
+        public Security Security { get; }
+        public uint Quantity { get; }
+        public uint Price { get; }
+        public DateTime Time { get; }
+        public Aggressor Side { get; set; } = Aggressor.NA;
+        public bool Live { get; set; } = false;
         public double PxVol => Price * Quantity;
+        #endregion
+        public override string ToString() {
+            var tm = Time.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            return $"[{Security}\t{tm}\t{Quantity}\t{Price}]";
+        }
     }
 }

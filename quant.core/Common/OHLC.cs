@@ -6,35 +6,63 @@ using System.Text;
 namespace quant.common
 {
     /// <summary>
-    /// 
+    /// OHLC = Open High Low Close Ticks
+    /// bar can be on Interval, VWAP, Volume, Price 
+    /// Open.Security != Close.Security is possible because of Roll
+    /// Offset represents the Offset between the roll of the securities
+    /// Offset == 0 if Open.Security == Close.Security
     /// </summary>
     public class OHLC
     {
-        static string codes = "_FGHJKMNQUVXZ";
+        #region ctor
         /// <summary>
-        /// 
+        /// To Create from CSV
         /// </summary>
-        public struct Stat  {
-            public DateTime Time { get; internal set; }
-            public double Price { get; internal set; }
+        /// <param name="data"></param>
+        public OHLC(string[] data) {
+            var symbol = new Security(data[1]);
+            Open = new Tick(symbol,1, uint.Parse(data[3]), DateTime.Parse(data[2]));
+            High = new Tick(symbol, 1, uint.Parse(data[5]), DateTime.Parse(data[4]));
+            Low = new Tick(symbol, 1, uint.Parse(data[7]), DateTime.Parse(data[6]));
+            Close = new Tick(symbol, 1, uint.Parse(data[9]), DateTime.Parse(data[8]));
+            Volume = uint.Parse(data[10]);
+            VWAP = double.Parse(data[11]);
         }
-        Stat _open, _close, _high, _low;
-        public Stat Open => _open;
-        public Stat Close => _close;
-        public Stat High => _high;
-        public Stat Low => _low;
-        public uint Volume { get; private set; }
-        public uint Count { get; private set; }
-        public double VWAP { get; private set; }
-        public string Symbol { get; }
-        public int MonthCode { get; }
+        /// <summary>
+        /// need to have atleast one tick
+        /// </summary>
+        public OHLC(Tick tck) {
+            High = Low = Open = Close = tck;
+            updateStats(tck);
+        }
+        #endregion
+
+        #region properties
+        public Tick Open    { get; private set; }
+        public Tick Close   { get; private set; }
+        public Tick High    { get; private set; }
+        public Tick Low     { get; private set; }
+        public uint Volume  { get; private set; }
+        public uint Count   { get; private set; }
+        public double VWAP  { get; private set; }
         /// <summary>
         /// High to Low
         /// </summary>
-        public double Range {
-            get {
-                return _high.Price - _low.Price;
-            }
+        public uint Range => High.Price - Low.Price;
+        /// <summary>
+        /// Roll Offset
+        /// </summary>
+        public int Offset { get; }
+        #endregion
+
+        /// <summary>
+        /// TODO: better formula to calculate VWAP. to prevent overflow
+        /// </summary>
+        /// <param name="tck"></param>
+        void updateStats(Tick tck) {
+            VWAP = (VWAP * Volume + tck.PxVol) / (Volume + tck.Quantity);
+            Count++;
+            Volume += tck.Quantity;
         }
         /// <summary>
         /// 
@@ -42,68 +70,33 @@ namespace quant.common
         /// <param name="prev"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public double TR(OHLC prev, double offset = 0)
+        public long TR(OHLC prev)
         {
-            Debug.Assert((offset != 0) ? (prev.Symbol != this.Symbol) : true);
+            // To do check the logic
             // adjusted for Roll.
-            double adj_prevClose = prev._close.Price + offset;
-            double high_prevclose = Math.Abs(this._high.Price - adj_prevClose);
-            double low_prevclose = Math.Abs(this._low.Price - adj_prevClose);
+            var adj_prevClose = prev.Close.Price + Offset;
+            var high_prevclose = Math.Abs(this.High.Price - adj_prevClose);
+            var low_prevclose = Math.Abs(this.Low.Price - adj_prevClose);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
         /// <summary>
-        /// To Create from CSV
-        /// </summary>
-        /// <param name="data"></param>
-        public OHLC(string[] data)
-        {
-            Symbol = data[1];
-            MonthCode = (10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]);
-            _open.Time = DateTime.Parse(data[2]);
-            _open.Price = double.Parse(data[3]);
-            _high.Time = DateTime.Parse(data[4]);
-            _high.Price = double.Parse(data[5]);
-            _low.Time = DateTime.Parse(data[6]);
-            _low.Price = double.Parse(data[7]);
-            _close.Time = DateTime.Parse(data[8]);
-            _close.Price = double.Parse(data[9]);
-            Volume = uint.Parse(data[10]);
-            VWAP = double.Parse(data[11]);
-        }
-        public OHLC(string sym) {
-            Symbol = sym;
-            MonthCode = (10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]);
-        }
-        /// <summary>
-        /// 
+        /// Add a tick to the OHLC bar
         /// </summary>
         /// <param name="tck"></param>
-        public void Add(Tick tck)   {
-            Debug.Assert(Symbol == tck.Symbol);
-            // open
-            if (Count == 0) {
-                _open.Time = tck.Time;
-                _open.Price = tck.Price;
-                // set high and low
-                _high = _low = _open;
-            }
-            // high check
-            if (_high.Price < tck.Price) {
-                _high.Time = tck.Time;
-                _high.Price = tck.Price;
-            }
-            // low check
-            else if (_low.Price > tck.Price) {
-                _low.Time = tck.Time;
-                _low.Price = tck.Price;
-            }
-            // close
-            _close.Time = tck.Time;
-            _close.Price = tck.Price;
+        public void Add(Tick tck)
+        {
+            if (High.Price < tck.Price) 
+                High = tck;
+            else if (Low.Price > tck.Price) 
+                Low = tck;
 
-            VWAP = (VWAP * Volume + tck.Price * tck.Quantity) / (Volume + tck.Quantity);
-            Count++;
-            Volume += tck.Quantity;
+            // Calculate Offset
+            if(tck.Security != Close.Security) {
+
+            }
+
+            Close = tck;
+            updateStats(tck);
         }
 
         //public override string ToString() {

@@ -9,10 +9,24 @@ namespace quant.common
     /// </summary>
     public class Security : IEquatable<Security>
     {
+        #region static
         static string codes = "_FGHJKMNQUVXZ";
+        static Dictionary<string, Security> _prds = new Dictionary<string, Security>();
+        /// <summary>
+        /// Lookup by name
+        /// </summary>
+        /// <param name="sym"></param>
+        /// <returns></returns>
+        public static Security Lookup(string sym) {
+            _prds.TryGetValue(sym, out Security sec);
+            if (sec == null)
+                _prds[sym] = sec = new Security(sym);
+            return sec;
+        }
+        #endregion
 
         #region ctor
-        public Security(string sym) { Symbol = sym; }
+        Security(string sym) { Symbol = sym; }
         #endregion
 
         #region properties
@@ -21,9 +35,21 @@ namespace quant.common
         #endregion
 
         #region equality
-        public static bool operator ==(Security left, Security right) => left.Equals(right);
-        public static bool operator !=(Security left, Security right) => !left.Equals(right);
-        public bool Equals(Security other) => (other != null && Symbol == other.Symbol);
+        public static bool operator == (Security left, Security right) {
+            if (((object)left) == null || ((object)right) == null)
+                return Object.Equals(left, right);
+            return left.Equals(right);
+        }
+        public static bool operator !=(Security left, Security right) {
+            if (((object)left) == null || ((object)right) == null)
+                return !Object.Equals(left, right);
+            return !left.Equals(right);
+        }
+        public bool Equals(Security other) {
+            if (other == null)
+                return false;
+            return Symbol == other.Symbol;
+        }        
         #endregion
 
         #region Object

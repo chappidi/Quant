@@ -16,22 +16,27 @@ namespace quant.common
         /// Lookup by name
         /// </summary>
         /// <param name="sym"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public static Security Lookup(string sym) {
+        public static Security Lookup(string sym, uint id=0) {
             _prds.TryGetValue(sym, out Security sec);
             if (sec == null)
-                _prds[sym] = sec = new Security(sym);
+                _prds[sym] = sec = new Security(sym, id);
             return sec;
         }
         #endregion
 
         #region ctor
-        Security(string sym) { Symbol = sym; }
-        #endregion
+        public Security(string sym, uint id = 0) {
+            Symbol = sym;
+            ID = (id == 0) ? MonthCode : id;
+        }
 
+        #endregion
         #region properties
         public string Symbol { get; }
-        public int MonthCode => (10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]);
+        public uint MonthCode => (uint)((10 + Symbol[3] - '0') * 100 + codes.IndexOf(Symbol[2]));
+        public uint ID { get; }
         #endregion
 
         #region equality
@@ -49,7 +54,7 @@ namespace quant.common
             if (other == null)
                 return false;
             return Symbol == other.Symbol;
-        }        
+        }
         #endregion
 
         #region Object

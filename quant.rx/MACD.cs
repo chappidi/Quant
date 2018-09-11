@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Text;
 using quant.common;
@@ -16,14 +17,14 @@ namespace quant.rx
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         public static IObservable<double> MACD(this IObservable<double> source, uint fast_period, uint slow_period)
         {
-            // TODO:  cannot use Zip.  u need to use WithLatestFrom
-//            return source.Publish(sr => sr.EMA(slow_period).WithLatestFrom(sr.EMA(fast_period), (slw, fst) => fst - slw));
-            return source.Publish(sr => sr.EMA(fast_period).Zip(sr.EMA(slow_period), (fst, slw) => fst - slw));
+            Debug.Assert(fast_period < slow_period);
+            return source.Publish(sr => sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw));
         }
         public static IObservable<double> MACD(this IObservable<OHLC> source, uint fast_period, uint slow_period)
         {
+            Debug.Assert(fast_period < slow_period);
             return null;
-//            return source.Publish(sr => sr.EMA(fast_period).Zip(sr.EMA(slow_period), (fst, slw) => fst - slw));
+//            return source.Publish(sr => sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw));
         }
     }
 }

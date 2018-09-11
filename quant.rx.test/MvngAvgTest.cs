@@ -5,12 +5,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace quant.rx.test
 {
-    /// <summary>
-    /// http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
-    /// </summary>
     [TestClass]
     public class MvgAvgTest
     {
+        /// <summary>
+        /// http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
+        /// </summary>
         [TestMethod]
         public void MvgAvg_Test()
         {
@@ -37,7 +37,8 @@ namespace quant.rx.test
         [TestMethod]
         public void WSMA_Test()
         {
-            // Data from "Gain" column.            
+            // Input = Data from "Gain" column.
+            // Output = Match the "Avg Gain" column
             double[] items = {
                 0.0000, 0.0595, 0.0000, 0.7154, 0.4986,
                 0.2691, 0.3290, 0.4188, 0.2393, 0.0000,
@@ -45,7 +46,7 @@ namespace quant.rx.test
                 0.0300, 0.3788, 0.0000, 0.0000, 0.5683,
                 0.0399, 0.0000, 0.7378, 0.0000, 0.0000,
                 0.0000, 0.1495, 0.0398, 0.3491, 0.0000,
-                0.0000, 0.4686, 0.0000 };
+                0.0000, 0.4686 };
 
             string wsma = null;
             items.ToObservable().Publish(sr => {

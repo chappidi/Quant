@@ -9,68 +9,6 @@ namespace quant.rx
 {
     public static class RxExtMethod
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> RSI(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs =>
-            {
-                var ema = new RSI(period);
-                return source.Subscribe(
-                    (val) =>
-                    {
-                        var retVal = ema.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="fastPeriod"></param>
-        /// <param name="slowPeriod"></param>
-        /// <returns></returns>
-        public static IObservable<double> MACD(this IObservable<double> source, uint fastPeriod, uint slowPeriod)
-        {
-            return Observable.Create<double>(obs =>
-            {
-                var macd = new MACD(fastPeriod, slowPeriod);
-                return source.Subscribe(
-                    (val) =>
-                    {
-                        var retVal = macd.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="fastPeriod"></param>
-        /// <param name="slowPeriod"></param>
-        /// <returns></returns>
-        public static IObservable<double> PPO(this IObservable<double> source, uint fastPeriod, uint slowPeriod)
-        {
-            return Observable.Create<double>(obs =>
-            {
-                var ppo = new PPO(fastPeriod, slowPeriod);
-                return source.Subscribe(
-                    (val) =>
-                    {
-                        var retVal = ppo.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
         public static IObservable<double> TR(this IObservable<Tuple<OHLC, OHLC>> source)
         {
             return Observable.Create<double>(obs => {
@@ -78,28 +16,12 @@ namespace quant.rx
                 return source.Subscribe(val => {
                     var offset = val.Item1.Close.Price - val.Item2.Close.Price;
                     if (prev != null)
-                        obs.OnNext(val.Item1.TR(prev, offset));
+                        obs.OnNext(val.Item1.TR(prev));
                     prev = val.Item1;
                 }, obs.OnError, obs.OnCompleted);
             });
         }
 
-        /// <summary>
-        /// True Range
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IObservable<double> TR(this IObservable<OHLC> source)
-        {
-            return Observable.Create<double>(obs => {
-                OHLC prev = null;
-                return source.Subscribe(val => {
-                        if (prev != null)
-                            obs.OnNext(val.TR(prev));
-                        prev = val;
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
 
         public static IObservable<double> ATR(this IObservable<Tuple<OHLC, OHLC>> source, uint period) {
             return source.TR().WSMA(period);

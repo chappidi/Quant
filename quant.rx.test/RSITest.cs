@@ -29,8 +29,8 @@ namespace quant.rx.test
             string rs = null;
             string rsi = null;
             items.ToObservable().Publish(sr => {
-                sr.RS(14).Subscribe(x => rs = x.ToString());
-                sr.RSI(14).Subscribe(x => rsi = x.ToString());
+                sr.Delta().RS(14).Subscribe(x => rs = x.ToString("0.0000"));
+                sr.RSI(14).Subscribe(x => rsi = x.ToString("0.0000"));
                 return sr;
             }).Subscribe(val=> {
                 Trace.WriteLine($"{val.ToString("0.0000")}\t{rs}\t{rsi}");

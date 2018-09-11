@@ -50,4 +50,5 @@ namespace quant.core
             m_wsma = (m_wsma - wsma_one + input);
             return m_wsma / Period;
         }
-    }}
+    }
+}

@@ -13,7 +13,7 @@ namespace quant.core
     // AverageLoss = WSMA of Loss(Period)
     // http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:relative_strength_index_rsi
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    internal class RS
+    public class RS
     {
         WSMA gain;
         WSMA loss;

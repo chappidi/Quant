@@ -6,6 +6,13 @@ using System.Text;
 
 namespace quant.rx
 {
+    /// <summary>
+    /// http://jonisalonen.com/2014/efficient-and-accurate-rolling-standard-deviation/
+    /// https://stackoverflow.com/questions/5147378/rolling-variance-algorithm
+    /// https://www.johndcook.com/blog/standard_deviation/
+    /// https://www.johndcook.com/blog/skewness_kurtosis/
+    /// 
+    /// </summary>
     public static class StdDevMethodExt
     {
         /// <summary>

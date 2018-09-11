@@ -61,13 +61,17 @@ namespace quant.rx
                 }, obs.OnError, obs.OnCompleted);
             });
         }
+        /// <summary>
+        /// TODO: Work in Progress
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static IObservable<double> Delta(this IObservable<OHLC> source)
         {
             return Observable.Create<double>(obs => {
                 OHLC oldVal = null;
                 return source.Subscribe((newVal) => {
-                    if (oldVal != null)
-                    {
+                    if (oldVal != null) {
                         // Roll happened  (either in middle or start of new bar.
                         // what to do ?
                         if (newVal.Offset != 0 || oldVal.Close.Security != newVal.Open.Security)

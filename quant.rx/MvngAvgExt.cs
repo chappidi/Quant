@@ -48,7 +48,7 @@ namespace quant.rx
                     }
                     // Error Logging
                     if (maxV.Open.Security.MonthCode < _prev.Open.Security.MonthCode)
-                        Trace.WriteLine($"BAD ROLLING ON {maxV.Open.Time} TO {maxV.Open.Security.Symbol} @ {maxV.Volume} vs {_prev.Open.Security.Symbol} @ {_prev.Volume}\t{((double)maxV.Volume/_prev.Volume).ToString("0.00")}");
+                        Trace.WriteLine($"BAD ROLLING ON {maxV.Open.TradedAt} TO {maxV.Open.Security.Symbol} @ {maxV.Volume} vs {_prev.Open.Security.Symbol} @ {_prev.Volume}\t{((double)maxV.Volume/_prev.Volume).ToString("0.00")}");
 
                 }, obs.OnError, obs.OnCompleted);
             });
@@ -82,167 +82,12 @@ namespace quant.rx
                         }
                         // Error Logging
                         if (maxV.Open.Security.MonthCode < newV.Open.Security.MonthCode) 
-                            Trace.WriteLine($"BAD ROLLING ON {maxV.Open.Time} TO {maxV.Open.Security.Symbol} @ {maxV.Volume} vs {newV.Open.Security.Symbol} @ {newV.Volume}");
+                            Trace.WriteLine($"BAD ROLLING ON {maxV.Open.TradedAt} TO {maxV.Open.Security.Symbol} @ {maxV.Volume} vs {newV.Open.Security.Symbol} @ {newV.Volume}");
                     }
                 }, obs.OnError, obs.OnCompleted);
             });
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> EMA(this IObservable<Tuple<OHLC, OHLC>> source, uint period)
-        {
-            Debug.Assert(period > 1);
 
-            return Observable.Create<double>(obs => {
-                double factor = (2.0 / (period + 1));
-                int count = 0;
-                double ema = 0;
-                return source.Subscribe((val) => {
-                    var input = val.Item1.Close.Price;
-                    var offset = val.Item1.Close.Price - val.Item2.Close.Price;
-                    // buffer not full
-                    if (count < period) {
-                        if(offset != 0)
-                            ema += count * offset;    // roll offset
-                        count++;
-                        ema += input;
-                        if (count == period)
-                            obs.OnNext(ema / period);
-                    }
-                    else {
-                        if (offset != 0)
-                            ema += offset;
-                        ema = (input * factor) + (ema * (1.0 - factor));
-                        obs.OnNext(ema);
-                    }
-                }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> EMA(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs => {
-                var ema = new EMA(period);
-                return source.Subscribe( (val) => {
-                        var retVal = ema.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-
-        public static IObservable<double> WSMA(this IObservable<Tuple<OHLC, OHLC>> source, uint period)
-        {
-            Debug.Assert(period > 1);
-            return Observable.Create<double>(obs => {
-                int count = 0;
-                double wsma = 0;
-                return source.Subscribe(val => {
-                    var offset = val.Item1.Close.Price - val.Item2.Close.Price;
-                    var input = val.Item1.Close.Price;
-                    if (offset != 0)
-                        wsma += count * offset;    // roll offset
-                    // buffer not full
-                    if (count < period) {
-                        count++;
-                        wsma += input;
-                        if (count == period)
-                            obs.OnNext(wsma / period);
-                    } else {
-                        Debug.Assert(count == period);
-                        double wsma_one = wsma / period;
-                        wsma = (wsma - wsma_one + input);
-                        obs.OnNext(wsma / period);
-                    }
-                }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> WSMA(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs => {
-                var ema = new WSMA(period);
-                return source.Subscribe( (val) => {
-                        var retVal = ema.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        public static IObservable<double> SMA(this IObservable<Tuple<OHLC, OHLC>> source, uint period)
-        {
-            Debug.Assert(period > 1);
-            return Observable.Create<double>(obs => {
-                double total = 0;
-                double count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (input) => {
-                        var addE = input.Item1; // item to be added
-                        var subE = input.Item2; // item to be removed
-                        var offset = addE.Item1.Close.Price - addE.Item2.Close.Price;  // offset for adjustment
-
-                        // buffer not full
-                        if (count < period)
-                            count++;
-                        else
-                        {
-                            Debug.Assert(count == period);
-                            total -= subE.Item2.Close.Price;    // remove old Value
-                        }
-
-                        // adjust add price so that we can increase for all elements
-                        total += (addE.Item1.Close.Price - offset);
-                        // increase offset for all elements
-                        if (offset != 0)
-                            total += count * offset;
-
-                        // count matches window size
-                        if (count == period)
-                            obs.OnNext(total / period);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> SMA(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs => {
-                double total = 0;
-                double count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (val) => {
-                        // add to the total sum
-                        total += val.Item1;
-                        // buffer not full
-                        if (count < period)
-                            count++;
-                        else
-                            total -= val.Item2;
-
-                        // count matches window size
-                        if (count == period)
-                            obs.OnNext(total / period);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
         /// <summary>
         /// https://www.investopedia.com/ask/answers/031115/what-common-strategy-traders-implement-when-using-volume-weighted-average-price-vwap.asp
         /// https://tradingsim.com/blog/vwap-indicator/
@@ -250,7 +95,7 @@ namespace quant.rx
         /// <param name="source"></param>
         /// <param name="period"></param>
         /// <returns></returns>
-        public static IObservable<double> MVWAP(this IObservable<Tick> source, uint period)
+        public static MVWAP MVWAP(this IObservable<Tick> source, uint period)
         {
             return new MVWAP(source, period);
         }

@@ -26,14 +26,16 @@ namespace quant.rx.test
                 45.3548, 44.0288, 44.1783, 44.2181, 44.5672,
                 43.4205, 42.6628, 43.1314};
 
+            string dlt = null;
             string rs = null;
             string rsi = null;
             items.ToObservable().Publish(sr => {
-                sr.Delta().RS(14).Subscribe(x => rs = x.ToString("0.0000"));
-                sr.RSI(14).Subscribe(x => rsi = x.ToString("0.0000"));
+                sr.Delta().Subscribe(x => dlt = x.ToString("0.00"));
+                sr.Delta().RS(14).Subscribe(x => rs = x.ToString("0.00"));
+                sr.RSI(14).Subscribe(x => rsi = x.ToString("0.00"));
                 return sr;
             }).Subscribe(val=> {
-                Trace.WriteLine($"{val.ToString("0.0000")}\t{rs}\t{rsi}");
+                Trace.WriteLine($"{val.ToString("0.00")}\t{dlt}\t{rs}\t{rsi}");
             });
         }
     }

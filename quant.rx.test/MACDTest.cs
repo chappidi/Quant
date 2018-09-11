@@ -29,6 +29,7 @@ namespace quant.rx.test
             string ema_12 = null;
             string ema_26 = null;
             string macd = null;
+            string ppo = null;
             string sig = null;
             string hist = null;
             data.ToObservable().Publish(sr => {
@@ -37,23 +38,15 @@ namespace quant.rx.test
                 sr.MACD(12, 26).Subscribe(x => macd = x.ToString("0.0000"));
                 sr.MACD(12, 26).EMA(9).Subscribe(x => sig = x.ToString("0.0000"));
                 sr.MACD(12, 26).Histogram(9).Subscribe(x => hist = x.ToString("0.0000"));
+                sr.PPO(12, 26).Subscribe(x => ppo = x.ToString("0.0000"));
                 return sr;
             }).Subscribe(val => {
                 if (!string.IsNullOrEmpty(sig))
                 {
                     int k = 0;
                 }
-                Trace.WriteLine($"{val.ToString("0.00")}\t{ema_12}\t{ema_26}\t{macd}\t{sig}\t{hist}");
+                Trace.WriteLine($"{val.ToString("0.00")}\t{ema_12}\t{ema_26}\t{macd}\t{sig}\t{hist}\t\t{ppo}");
             });
         }
-        /// <summary>
-        /// https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:price_oscillators_ppo
-        /// </summary>
-        [TestMethod]
-        public void MACD_Test_2()
-        {
-
-        }
-
     }
 }

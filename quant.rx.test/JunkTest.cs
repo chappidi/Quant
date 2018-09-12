@@ -17,7 +17,7 @@ namespace quant.rx.test
         {
             var srcObs = BarGenMethod.OHLCFromCSV(@"D:\GIT_DIR_VSTS\CL_OHLC_2017.txt");
             var cc = srcObs.ToObservable().Continuous(1.2).EMA(10).Subscribe(x => Trace.WriteLine(x));
-            srcObs.ToObservable().Continuous(1.2).Subscribe(x => {
+            srcObs.ToObservable().ContinuousX(1.2).Subscribe(x => {
                 Trace.WriteLine($"{x.Item1.Close.TradedAt}\t{x.Item1.Open.Security.Symbol}\t{x.Item1.Volume}\t{x.Item1.Close.Price - x.Item2.Close.Price}");
             });
         }

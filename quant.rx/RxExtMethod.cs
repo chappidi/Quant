@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
-using quant.core;
 using quant.common;
 
 namespace quant.rx
@@ -42,7 +41,7 @@ namespace quant.rx
         /// <param name="multiplier"></param>
         /// <param name="atrPeriod"></param>
         /// <returns></returns>
-        public static IObservable<double> KELT(this IObservable<Tuple<OHLC,OHLC>> source, uint signalPeriod, double atrMultiplier, uint atrPeriod) {
+        public static IObservable<double> KELT(this IObservable<OHLC> source, uint signalPeriod, double atrMultiplier, uint atrPeriod) {
             // signal EMA
             var signal = source.EMA(signalPeriod);
             var envelope = source.ATR(atrPeriod);

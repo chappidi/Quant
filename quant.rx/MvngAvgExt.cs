@@ -1,22 +1,25 @@
-﻿using quant.common;
-using quant.core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using quant.common;
 
 namespace quant.rx
 {
     public static class MvngAvgExt
     {
+        public static IObservable<OHLC> Continuous(this IObservable<IList<OHLC>> source, double factor)
+        {
+            return null;
+        }
         /// <summary>
         /// Continuous Pricing. 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="factor"></param>
         /// <returns></returns>
-        public static IObservable<Tuple<OHLC, OHLC>> Continuous(this IObservable<IList<OHLC>> source, double factor) {
+        public static IObservable<Tuple<OHLC, OHLC>> ContinuousX(this IObservable<IList<OHLC>> source, double factor) {
             return Observable.Create<Tuple<OHLC, OHLC>>(obs => {
                 OHLC _prev = null;
                 return source.Subscribe(lt => {

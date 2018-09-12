@@ -9,6 +9,39 @@ namespace quant.rx
 {
     public static partial class QuantExt
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        public static IObservable<double> SMA(this IObservable<double> source, uint period)
+        {
+            return Observable.Create<double>(obs => {
+                double total = 0;
+                double count = 0;   // count of elements
+                return source.RollingWindow(period).Subscribe(
+                    (val) => {
+                        // add to the total sum
+                        total += val.Item1;
+                        // buffer not full
+                        if (count < period)
+                            count++;
+                        else
+                            total -= val.Item2;
+
+                        // count matches window size
+                        if (count == period)
+                            obs.OnNext(total / period);
+                    }, obs.OnError, obs.OnCompleted);
+            });
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
         public static IObservable<double> SMA(this IObservable<Tuple<OHLC, OHLC>> source, uint period)
         {
             Debug.Assert(period > 1);
@@ -35,33 +68,6 @@ namespace quant.rx
                         // increase offset for all elements
                         if (offset != 0)
                             total += count * offset;
-
-                        // count matches window size
-                        if (count == period)
-                            obs.OnNext(total / period);
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> SMA(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs => {
-                double total = 0;
-                double count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (val) => {
-                        // add to the total sum
-                        total += val.Item1;
-                        // buffer not full
-                        if (count < period)
-                            count++;
-                        else
-                            total -= val.Item2;
 
                         // count matches window size
                         if (count == period)

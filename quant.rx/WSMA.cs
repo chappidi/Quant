@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using quant.common;
@@ -8,61 +9,51 @@ using quant.core;
 
 namespace quant.rx
 {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Wilder’s Smoothing AKA SMoothed Moving Average (WSMA)
+    // SUM1=SUM (CLOSE, N)
+    // WSMA1 = SUM1/ N
+    // WSMA (i) = (SUM1 – WSMA1 + CLOSE(i) )/ N =  ( (WSMA1 * (N-1)) + CLOSE(i) )/N
+    //
+    // The WSMA is almost identical to an EMA of twice the look back period. 
+    // In other words, 20-period WSMA is almost identical to a 40-period EMA
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// 
+    /// </summary>
     public static partial class QuantExt
     {
-        public static IObservable<double> WSMA(this IObservable<Tuple<OHLC, OHLC>> source, uint period)
+        /// <summary>
+        /// Wilder’s Smoothing AKA SMoothed Moving Average (WSMA)
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        public static IObservable<double> WSMA(this IObservable<double> source, uint period, IObservable<double> offset = null)
         {
-            Debug.Assert(period > 1);
+            uint count = 0;
+            double total = 0;
             return Observable.Create<double>(obs => {
-                int count = 0;
-                double wsma = 0;
-                return source.Subscribe(val => {
-                    var offset = val.Item1.Close.Price - val.Item2.Close.Price;
-                    var input = val.Item1.Close.Price;
-                    if (offset != 0)
-                        wsma += count * offset;    // roll offset
+                var ret = new CompositeDisposable();
+                ret.Add(source.Subscribe(val => {
+                    // edge condition
+                    if (period == 1) { obs.OnNext(val); return; }
                     // buffer not full
                     if (count < period) {
-                        count++;
-                        wsma += input;
-                        if (count == period)
-                            obs.OnNext(wsma / period);
-                    } else {
-                        Debug.Assert(count == period);
-                        double wsma_one = wsma / period;
-                        wsma = (wsma - wsma_one + input);
-                        obs.OnNext(wsma / period);
-                    }
-                }, obs.OnError, obs.OnCompleted);
-            });
-        }
-        public static IObservable<double> WSMA_X(this IObservable<double> source, uint period)
-        {
-            return Observable.Create<double>(obs => {
-                uint count = 0;
-                double total = 0;
-
-                return source.Subscribe((val) => {
-                    if (period == 1)
-                    {
-                        obs.OnNext(val);
-                        return;
-                    }
-                    // buffer not full
-                    if (count < period)
-                    {
-                        ++count;
+                        // Initial SMA mode
                         total += val;
+                        ++count;
                         if (count == period)
                             obs.OnNext(total / period);
-                    }
-                    else
-                    {
+                    } else {
+                        // normal calculation
                         double wsma_one = total / period;
                         total = (total - wsma_one + val);
                         obs.OnNext(total / period);
                     }
-                }, obs.OnError, obs.OnCompleted);
+                }, obs.OnError, obs.OnCompleted));
+                return ret;
             });
         }
         /// <summary>
@@ -71,16 +62,9 @@ namespace quant.rx
         /// <param name="source"></param>
         /// <param name="period"></param>
         /// <returns></returns>
-        public static IObservable<double> WSMA(this IObservable<double> source, uint period)
+        public static IObservable<double> WSMA(this IObservable<OHLC> source, uint period)
         {
-            return Observable.Create<double>(obs => {
-                var ema = new WSMA(period);
-                return source.Subscribe( (val) => {
-                        var retVal = ema.Calc(val);
-                        if (!double.IsNaN(retVal))
-                            obs.OnNext(retVal);
-                    }, obs.OnError, obs.OnCompleted);
-            });
+            return null;
         }
     }
 }

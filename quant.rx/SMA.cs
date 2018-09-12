@@ -4,14 +4,13 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using quant.common;
 
 namespace quant.rx
 {
     public static partial class QuantExt
     {
         /// <summary>
-        /// 
+        /// Simple Moving Average
         /// </summary>
         /// <param name="source"></param>
         /// <param name="period"></param>

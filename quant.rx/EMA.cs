@@ -42,6 +42,12 @@ namespace quant.rx
                     }
                     obs.OnNext(ema);
                 }, obs.OnError, obs.OnCompleted));
+
+                if(offset != null) {
+                    ret.Add(offset.Subscribe(val => {
+
+                    }, obs.OnError, obs.OnCompleted));
+                }
                 return ret;
             });
         }

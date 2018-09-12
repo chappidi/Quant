@@ -8,18 +8,14 @@ using quant.common;
 
 namespace quant.rx
 {
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Wilder’s Smoothing AKA SMoothed Moving Average (WSMA)
-    // SUM1=SUM (CLOSE, N)
-    // WSMA1 = SUM1/ N
-    // WSMA (i) = (SUM1 – WSMA1 + CLOSE(i) )/ N =  ( (WSMA1 * (N-1)) + CLOSE(i) )/N
-    //
-    // The WSMA is almost identical to an EMA of twice the look back period. 
-    // In other words, 20-period WSMA is almost identical to a 40-period EMA
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     /// <summary>
-    /// 
+    /// Wilder’s Smoothing AKA SMoothed Moving Average (WSMA)
+    /// SUM1=SUM (CLOSE, N)
+    /// WSMA1 = SUM1/ N
+    /// WSMA (i) = (SUM1 – WSMA1 + CLOSE(i) )/ N =  ( (WSMA1 * (N-1)) + CLOSE(i) )/N
+    ///
+    /// The WSMA is almost identical to an EMA of twice the look back period. 
+    /// In other words, 20-period WSMA is almost identical to a 40-period EMA
     /// </summary>
     public static partial class QuantExt
     {
@@ -52,18 +48,14 @@ namespace quant.rx
                         obs.OnNext(total / period);
                     }
                 }, obs.OnError, obs.OnCompleted));
+
+                if(offset != null) {
+                    ret.Add(offset.Subscribe(val => {
+
+                    }, obs.OnError, obs.OnCompleted));
+                }
                 return ret;
             });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> WSMA(this IObservable<OHLC> source, uint period)
-        {
-            return null;
         }
     }
 }

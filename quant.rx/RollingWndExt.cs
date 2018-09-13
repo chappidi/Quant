@@ -13,7 +13,7 @@ namespace quant.rx
     /// <typeparam name="T"></typeparam>
     internal class RingWnd<T> {
         readonly uint period;
-        public readonly T[] buffer = null;
+        internal readonly T[] buffer = null;
         public uint head { get; private set; } = 0;
 
         public RingWnd(uint period) {

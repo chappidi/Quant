@@ -1,11 +1,11 @@
-﻿using quant.common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Disposables;
 using System.Text;
+using quant.common;
 
 namespace quant.rx
 {
@@ -26,7 +26,7 @@ namespace quant.rx
             _period = period;
         }
         #endregion
-        private void OnVal(double newVal, double oldVal, IObserver<double> obsvr) {
+        void OnVal(double newVal, double oldVal, IObserver<double> obsvr) {
             // add to the total sum
             _total += newVal;
             // buffer not full
@@ -45,10 +45,11 @@ namespace quant.rx
         }
         #endregion
     }
+
     /// <summary>
-    /// 
+    /// Using RingWnd. Helps do adjustments for future rolls
     /// </summary>
-    internal class SMA_V3 : IObservable<double>
+    class SMA_V3 : IObservable<double>
     {
         readonly IObservable<double> _source;
         readonly IObservable<double> _offset;
@@ -101,8 +102,9 @@ namespace quant.rx
         }
         #endregion
     }
+
     /// <summary>
-    /// 
+    /// Local Extension.
     /// </summary>
     public static class SMAExt {
         /// <summary>
@@ -128,19 +130,29 @@ namespace quant.rx
     }
 
     /// <summary>
-    /// 
+    /// Global Extensions
     /// </summary>
     public static partial class QuantExt
     {
+        /// <summary>
+        /// Standard Extension
+        /// </summary>
         public static IObservable<double> SMA(this IObservable<double> source, uint period, IObservable<double> offset = null) {
 //            return source.SMA_V2(period);
             return source.SMA_V3(period, offset);
         }
+        /// <summary>
+        /// Tick based SMA . Takes care of adjustments for futures roll / continuous pricing
+        /// </summary>
         public static IObservable<double> SMA(this IObservable<Tick> source, uint period) {
             return source.Publish(sr => {
                 return sr.Select(x => (double)x.Price).SMA(period, sr.Offset());
             });
         }
+        /// <summary>
+        /// OHLC based SMA of Close Price.
+        /// TODO: Extend to choose Open High, Low. 
+        /// </summary>
         public static IObservable<double> SMA(this IObservable<OHLC> source, uint period) {
             return source.Publish(sr => {
                 return sr.Select(x => (double)x.Close.Price).SMA(period, sr.Offset());

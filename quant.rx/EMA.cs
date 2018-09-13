@@ -114,7 +114,7 @@ namespace quant.rx
     }
 
     /// <summary>
-    /// Local Extension.
+    /// Global Extension.
     /// </summary>
     public static partial class QuantExt
     {
@@ -122,7 +122,7 @@ namespace quant.rx
         /// Standard Extension
         /// </summary>
         public static IObservable<double> EMA(this IObservable<double> source, uint period, IObservable<double> offset = null) {
-            return source.EMA_V1(period, offset);
+            return source.EMA_V2(period, offset);
         }
         /// <summary>
         /// Tick based EMA . Takes care of adjustments for futures roll / continuous pricing

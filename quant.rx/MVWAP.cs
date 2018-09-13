@@ -85,7 +85,7 @@ namespace quant.rx
                     // find amount to reduce
                     uint diff = Vol - WND_SIZE;
                     // add back the difference
-                    que.AddFirst(new Tick(oldTck.Security, oldTck.Quantity - diff, oldTck.Price, oldTck.Time) { Side = oldTck.Side, Live = oldTck.Live });
+                    que.AddFirst(new Tick(oldTck.Security, oldTck.Quantity - diff, oldTck.Price, oldTck.TradedAt) { Side = oldTck.Side, Live = oldTck.Live });
                     // reduce the aggregate amounts
                     pxVol -= (oldTck.Price + offset) * diff;
                     Vol -= diff;

@@ -14,22 +14,19 @@ namespace quant.common
     /// </summary>
     public class OHLC
     {
+        /// <summary>
+        /// update count, volume and pxVol
+        /// </summary>
+        /// <param name="tck"></param>
+        void updateStats(Tick tck) {
+            Count++;
+            Volume += tck.Quantity;
+            PxVol += tck.PxVol;
+        }
+
         #region ctor
         /// <summary>
-        /// To Create from CSV
-        /// </summary>
-        /// <param name="data"></param>
-        public OHLC(string[] data) {
-            var symbol = Security.Lookup(data[1]);
-            Open = new Tick(symbol,1, uint.Parse(data[3]), DateTime.Parse(data[2]));
-            High = new Tick(symbol, 1, uint.Parse(data[5]), DateTime.Parse(data[4]));
-            Low = new Tick(symbol, 1, uint.Parse(data[7]), DateTime.Parse(data[6]));
-            Close = new Tick(symbol, 1, uint.Parse(data[9]), DateTime.Parse(data[8]));
-            Volume = uint.Parse(data[10]);
-            PxVol = double.Parse(data[11]) * Volume;
-        }
-        /// <summary>
-        /// need to have atleast one tick
+        /// need a tick to start the bar
         /// </summary>
         public OHLC(Tick tck) {
             High = Low = Open = Close = tck;
@@ -37,31 +34,26 @@ namespace quant.common
         }
         #endregion
 
-        #region properties
-        public Tick Open    { get; private set; } = null;
-        public Tick Close   { get; private set; } = null;
-        public Tick High    { get; private set; } = null;
-        public Tick Low     { get; private set; } = null;
-        public uint Volume  { get; private set; } = 0;
-        public uint Count   { get; private set; } = 0;
-        public double PxVol { get; private set; } = 0;
-        public int Offset   { get; private set; } = 0;
-
-        public double VWAP    => PxVol / Volume;
-        public uint Range => High.Price - Low.Price;
+        #region enum
+        public enum Color { Black, Red, NA };
+        public enum PriceType { OPEN, HIGH, LOW, CLOSE, HL, HLC, OHLC };
         #endregion
 
-        void updateStats(Tick tck) {
-            Count++;
-            Volume += tck.Quantity;
-            PxVol += tck.PxVol;
-        }
-        /// <summary>
-        /// TODO: Remove
-        /// </summary>
-        /// <param name="prev"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
+        #region properties
+        public Tick     Open    { get; private set; } = null;
+        public Tick     Close   { get; private set; } = null;
+        public Tick     High    { get; private set; } = null;
+        public Tick     Low     { get; private set; } = null;
+        public uint     Volume  { get; private set; } = 0;
+        public uint     Count   { get; private set; } = 0;
+        public double   PxVol   { get; private set; } = 0;
+        public int      Offset  { get; private set; } = 0;
+
+        public double   VWAP    => PxVol / Volume;
+        public uint     Range   => High.Price - Low.Price;
+        public DateTime Seed { get; set; }
+        public Color FillColor => (Close.Price == Open.Price) ? Color.NA : (Close.Price > Open.Price) ? Color.Black : Color.Red;
+        #endregion
         public long TR(OHLC prev)
         {
             // To do check the logic
@@ -71,20 +63,14 @@ namespace quant.common
             var low_prevclose = Math.Abs(this.Low.Price - adj_prevClose);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
-        /// <summary>
-        /// Add a tick to the OHLC bar
-        /// update high, low, close ticks
-        /// update stats.
-        /// </summary>
-        /// <param name="tck"></param>
-        public void Add(Tick tck)
-        {
+        public void Add(Tick tck) {
+            // update High and Low
             if (High.Price < tck.Price) 
                 High = tck;
             else if (Low.Price > tck.Price) 
                 Low = tck;
 
-            // Calculate Offset.
+            // security roll
             if(tck.Security != Close.Security) {
                 // find the offset
                 var diff = (int)(tck.Price - Close.Price);
@@ -93,15 +79,23 @@ namespace quant.common
                 // adjust pxVol to reflect continuous pricing
                 PxVol += Volume * diff;
             }
-
+            // update Close
             Close = tck;
+            // update stats
             updateStats(tck);
         }
+        public int get_Offset(OHLC old) {
 
+            int retVal = Offset;
+            // roll happened at end of bar and bar includes multiple contracts 
+            if (old != null && old.Close.Security != this.Open.Security)
+                retVal += (int)(this.Open.Price - old.Close.Price);
+            return retVal;
+        }
         #region Object
         public override string ToString() {
-            var opn = Open.Time.ToString("MM/dd/yyyy HH:mm");
-            var cls = Close.Time.ToString("MM/dd/yyyy HH:mm");
+            var opn = Open.TradedAt.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            var cls = Close.TradedAt.ToString("MM/dd/yyyy HH:mm:ss.fff");
             return ($"OHLC:\t{Close.Security}\t[{opn} : {cls}]\t[O:{Open.Price} H:{High.Price} L:{Low.Price} C:{Close.Price} V:{Volume}]");
         }
         #endregion

@@ -7,8 +7,38 @@ using System.Threading;
 
 namespace quant.rx
 {
+   /// <summary>
+    /// base class to implement sliding window
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal class RingWnd<T> {
+        readonly uint period;
+        readonly T[] buffer = null;
+        uint head = 0;          // enque here
+
+        public RingWnd(uint period) {
+            this.period = period;
+            buffer = new T[period];
+        }
+        public T Enqueue(T item) {
+            //oldVal = default(T) if the buffer is not full
+            T oldVal = buffer[head];
+            buffer[head] = item;
+            head = (head + 1) % period;
+            return oldVal;
+        }
+    }
     public static class RollingWndExt
     {
+        internal static IObservable<Tuple<TSource, TSource>> RollingWindowX<TSource>(this IObservable<TSource> source, uint period)
+        {
+            RingWnd<TSource> ring = new RingWnd<TSource>(period);
+            return Observable.Create<Tuple<TSource, TSource>>(obs => {
+                return source.Subscribe(newVal => {
+                    obs.OnNext(new Tuple<TSource, TSource>(newVal, ring.Enqueue(newVal)));
+                }, obs.OnError, obs.OnCompleted);
+            });
+        }
         /// <summary>
         /// 
         /// </summary>

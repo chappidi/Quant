@@ -28,17 +28,18 @@ namespace quant.rx
                     idx = int.Parse(row[0]);
                     retVal = new List<OHLC>();
                 }
-                var ohlc = new OHLC(row);
+                OHLC ohlc = null; //new OHLC(row);
                 retVal.Add(ohlc);
             }
         }
 
         public static IObservable<Tick> FromCSV(string file)
         {
+            var symbol = Security.Lookup("");
             return File.ReadLines(file).ToObservable().Skip(1).Select(x =>
             {
                 var row = x.Replace("\"", "").Split(',');
-                return new Tick("", uint.Parse(row[8]), double.Parse(row[7]), DateTime.Parse(row[3]));
+                return new Tick(symbol, uint.Parse(row[8]), uint.Parse(row[7]), DateTime.Parse(row[3]));
             });
         }
         /// <summary>
@@ -54,9 +55,10 @@ namespace quant.rx
                     if (ohlc == null || durationSelector(ohlc, tck)) {
                         if(ohlc != null)
                             obs.OnNext(ohlc);
-                        ohlc = new OHLC(tck.Symbol);
+                        ohlc = new OHLC(tck);
                     }
-                    ohlc.Add(tck);
+                    else
+                        ohlc.Add(tck);
                 }, obs.OnError, () => {
                     //partial bar
                     if (ohlc != null)
@@ -102,57 +104,12 @@ namespace quant.rx
         /// <param name="volume"></param>
         /// <returns></returns>
         public static IObservable<OHLC> ByInterval(this IObservable<Tick> source, TimeSpan period) {
-            return source.OHLC((ohlc, tck) => (ohlc.Open.Time.Ticks/period.Ticks != tck.Time.Ticks/period.Ticks));
+            return source.OHLC((ohlc, tck) => (ohlc.Open.TradedAt.Ticks/period.Ticks != tck.TradedAt.Ticks/period.Ticks));
         }
         public static IObservable<OHLC> MVWAP_Y(this IObservable<Tick> source, uint period, uint range)
         {
             return source.OHLC((ohlc, tck) => {
                 return (ohlc.Volume >= period) && (ohlc.High.Price - ohlc.Low.Price >= range);
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <param name="range"></param>
-        /// <returns></returns>
-        public static IObservable<OHLC> MVWAP(this IObservable<Tick> source, uint period, uint range)
-        {
-            return Observable.Create<OHLC>(obs => {
-                // variables
-                double maxVal = double.MinValue;
-                double minVal = double.MaxValue;
-                Tick tk = null;
-                var ohlc = new OHLC("");
-
-                return source.Select(tck => {
-                    // capture tick which generates the mvwap
-                    tk = tck;
-                    return tck;
-                }).MVWAP(period).Subscribe((vw) => {
-                    // add the tick to OHLC
-                    ohlc.Add(tk);
-                    // capture max and min moving vwap
-                    maxVal = Math.Max(vw, maxVal);
-                    minVal = Math.Min(vw, minVal);
-                    // if range is exceeded.
-                    if (maxVal - minVal >= range)
-                    {
-//                        Trace.WriteLine($"\tX\t{tk.Time}\t{maxVal-minVal}");
-                        // publish the bar
-                        obs.OnNext(ohlc);
-                        // reset state
-                        maxVal = double.MinValue;
-                        minVal = double.MaxValue;
-                        ohlc = new OHLC(tk.Symbol);
-                    }
-//                    Trace.WriteLine($"{x.ToString("0.000")}\t{tk.Time}\t{tk.Quantity}\t{tk.Price}");
-                }, obs.OnError, () => {
-                    //publish final bar
-                    obs.OnNext(ohlc);
-                    obs.OnCompleted();
-                });
             });
         }
     }

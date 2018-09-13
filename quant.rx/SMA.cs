@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -9,102 +10,140 @@ using System.Text;
 namespace quant.rx
 {
     /// <summary>
-    /// 
+    /// Using Rolling Window
     /// </summary>
-    internal class SMA : IObservable<double>
+    class SMA_V2 : IObservable<double>
     {
-        readonly RingBuffer<double> _vals;
-        readonly IObservable<double> _data;
-        readonly IObservable<double> _offset;
-
+        readonly IObservable<double> _source;
+        readonly uint _period;
+        // variables
         double _total = 0;
+        uint _count = 0;
 
         #region ctor
-        public SMA(IObservable<double> source, uint wnd, IObservable<double> offset = null) {
-            _vals = new RingBuffer<double>(wnd);
-            _data = source;
-            _offset = offset;
+        public SMA_V2(IObservable<double> source, uint period) {
+            _source = source;
+            _period = period;
         }
         #endregion
-        private void OnVal(double Val, IObserver<double> obsvr) {
-            if (_vals.IsFull)
-                _total -= _vals.Dequeue();
-            _vals.Enqueue(Val);
-            _total += Val;
-            if (_vals.IsFull)
-                obsvr.OnNext(_total / _vals.Size);
-        }
-        private void OnAdjust(double offset) {
-            _vals.Adjust(x => x + offset);
-            _total += offset * _vals.Size;
+        private void OnVal(double newVal, double oldVal, IObserver<double> obsvr) {
+            // add to the total sum
+            _total += newVal;
+            // buffer not full
+            if (_count < _period)
+                _count++;
+            else
+                _total -= oldVal;
+
+            // count matches window size
+            if (_count == _period)
+                obsvr.OnNext(_total / _period);
         }
         #region IObservable
         public IDisposable Subscribe(IObserver<double> obsvr) {
+            return _source.RollingWindow(_period).Subscribe(val => OnVal(val.Item1, val.Item2, obsvr), obsvr.OnError, obsvr.OnCompleted);
+        }
+        #endregion
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    internal class SMA_V3 : IObservable<double>
+    {
+        readonly IObservable<double> _source;
+        readonly IObservable<double> _offset;
+        readonly uint _period;
+        // variables
+        readonly RingWnd<double> _ring = null;
+        double _total = 0;
+        uint _count = 0;
+
+        #region ctor
+        public SMA_V3(IObservable<double> source, uint period, IObservable<double> offset = null) {
+            _source = source;
+            _period = period;
+            _offset = offset;
+
+            _ring = new RingWnd<double>(period);
+        }
+        #endregion
+        void OnVal(double newVal, double oldVal, IObserver<double> obsvr)
+        {
+            // add to the total sum
+            _total += newVal;
+            // buffer not full
+            if (_count < _period)
+                _count++;
+            else
+                _total -= oldVal;
+
+            // count matches window size
+            if (_count == _period)
+                obsvr.OnNext(_total / _period);
+        }
+        #region IObservable
+        public IDisposable Subscribe(IObserver<double> obsvr)
+        {
             var ret = new CompositeDisposable();
-            // offset calculations
+            // offset calculations are associated with future product rolls.
             if (_offset != null) {
                 ret.Add(_offset.Subscribe(ofst => {
-                    OnAdjust(ofst);
+                    for (int itr = 0; itr < _count; ++itr) {
+                        long idx = (_ring.head + itr) % _period;
+                        _ring.buffer[idx] += ofst;
+                    }
+                    _total += ofst * _count;
                 }));
             }
-            ret.Add(_data.Subscribe(val => OnVal(val, obsvr), obsvr.OnError, obsvr.OnCompleted));
+            // data subscription
+            ret.Add(_source.Subscribe(val => OnVal(val, _ring.Enqueue(val), obsvr), obsvr.OnError, obsvr.OnCompleted));
             return ret;
         }
         #endregion
     }
-    public static class SMAExt
-    {
-        public static IObservable<double> SMA_X(this IObservable<double> source, uint period)
-        {
-            return new SMA(source, period);
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class SMAExt {
+        /// <summary>
+        /// VERSION 1: basic raw
+        /// </summary>
+        internal static IObservable<double> SMA_V1(this IObservable<double> source, int period) {
+            return source.Buffer(period, 1).Where(x => x.Count == period).Select(x => x.Sum() / period);
         }
-        public static IObservable<double> SMA_X(this IObservable<OHLC> source, uint period)
+        /// <summary>
+        /// VERSION 2:  Using RollingWindow ( Better Performace)
+        /// </summary>
+        internal static IObservable<double> SMA_V2(this IObservable<double> source, uint period) {
+            return new SMA_V2(source, period);
+        }
+        /// <summary>
+        /// VERSION 3:  Using RingBuffer( Performance and Roll Adjustments)
+        /// Performance: Avoid Rollingwindow create Tuples.
+        /// </summary>
+        internal static IObservable<double> SMA_V3(this IObservable<double> source, uint period, IObservable<double> offset = null)
         {
-            return source.Publish(src => {
-                var offset = src.Buffer(2, 1).Select(x => (x.Count == 2) ? x[1].get_Offset(x[0]) : 0.0).Where(y => y != 0);
-                return new SMA(src.Select(x => (double)x.Close.Price), period, offset);
-            });
+            return new SMA_V3(source, period, offset);
         }
     }
+
     /// <summary>
     /// 
     /// </summary>
     public static partial class QuantExt
     {
-        /// <summary>
-        /// Simple Moving Average
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> SMA(this IObservable<double> source, uint period, IObservable<double> offset = null)
-        {
-            double total = 0;
-            double count = 0;   // count of elements
-            return Observable.Create<double>(obs => {
-                var ret = new CompositeDisposable();
-                //offset adjustments has to be first
-                if(offset != null) {
-                    ret.Add(offset.Subscribe(val => {
-
-                    }, obs.OnError, obs.OnCompleted));
-                }
-                // data next
-                ret.Add(source.RollingWindow(period).Subscribe(val => {
-                        // add to the total sum
-                        total += val.Item1;
-                        // buffer not full
-                        if (count < period)
-                            count++;
-                        else
-                            total -= val.Item2;
-
-                        // count matches window size
-                        if (count == period)
-                            obs.OnNext(total / period);
-                    }, obs.OnError, obs.OnCompleted));
-
-                return ret;
+        public static IObservable<double> SMA(this IObservable<double> source, uint period, IObservable<double> offset = null) {
+//            return source.SMA_V2(period);
+            return source.SMA_V3(period, offset);
+        }
+        public static IObservable<double> SMA(this IObservable<Tick> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Price).SMA(period, sr.Offset());
+            });
+        }
+        public static IObservable<double> SMA(this IObservable<OHLC> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Close.Price).SMA(period, sr.Offset());
             });
         }
     }

@@ -92,6 +92,13 @@ namespace quant.common
                 retVal += (int)(this.Open.Price - old.Close.Price);
             return retVal;
         }
+        public int get_Offset(Tick old) {
+            int retVal = Offset;
+            // roll happened at end of bar and bar includes multiple contracts 
+            if (old != null && old.Security != this.Open.Security)
+                retVal += (int)(this.Open.Price - old.Price);
+            return retVal;
+        }
         #region Object
         public override string ToString() {
             var opn = Open.TradedAt.ToString("MM/dd/yyyy HH:mm:ss.fff");

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace quant.rx.test
 {
     [TestClass]
-    public class SMA_Test
+    public class SMATest
     {
         [TestMethod]
         public void SMA_Test_1()

@@ -90,36 +90,5 @@ namespace quant.rx
                 }, obs.OnError, obs.OnCompleted);
             });
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <param name="func"></param>
-        /// <returns></returns>
-        internal static IObservable<double> ABC(this IObservable<double> source, uint period, Func<double, double, bool> func)
-        {
-            return Observable.Create<double>(obs => {
-                var que = new LinkedList<double>();
-                double count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (val) => {
-                        // val < Que.Last.Value
-                        while (que.Last != null && func(val.Item1, que.Last.Value))
-                            que.RemoveLast();
-                        // Que.First.Value == deqVal
-                        //Math.Abs(Q.First.Value - val.Item2) < 0.0000001
-                        if (que.First != null && EqualityComparer<double>.Default.Equals(que.First.Value, val.Item2))
-                            que.RemoveFirst();
-
-                        que.AddLast(val.Item1);
-
-                        if (count >= (period - 1))
-                            obs.OnNext(que.First.Value);
-                        else
-                            count++;
-                    }, obs.OnError, obs.OnCompleted);
-            });
-        }
     }
 }

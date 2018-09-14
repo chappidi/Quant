@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
+using quant.common;
 
 namespace quant.rx
 {
@@ -28,6 +29,37 @@ namespace quant.rx
     /// </summary>
     internal static class MaxMinExt
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="period"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        internal static IObservable<double> ABC(this IObservable<double> source, uint period, Func<double, double, bool> func)
+        {
+            return Observable.Create<double>(obs => {
+                var que = new LinkedList<double>();
+                double count = 0;   // count of elements
+                return source.RollingWindow(period).Subscribe(
+                    (val) => {
+                        // val < Que.Last.Value
+                        while (que.Last != null && func(val.Item1, que.Last.Value))
+                            que.RemoveLast();
+                        // Que.First.Value == deqVal
+                        //Math.Abs(Q.First.Value - val.Item2) < 0.0000001
+                        if (que.First != null && EqualityComparer<double>.Default.Equals(que.First.Value, val.Item2))
+                            que.RemoveFirst();
+
+                        que.AddLast(val.Item1);
+
+                        if (count >= (period - 1))
+                            obs.OnNext(que.First.Value);
+                        else
+                            count++;
+                    }, obs.OnError, obs.OnCompleted);
+            });
+        }
         /// <summary>
         /// basic Implementation
         /// </summary>
@@ -55,11 +87,52 @@ namespace quant.rx
     /// </summary>
     public static partial class QuantExt
     {
-        public static IObservable<double> Max(this IObservable<double> source, uint period) {
+        /// <summary>
+        /// Standard Extension of Max
+        /// </summary>
+        public static IObservable<double> Max(this IObservable<double> source, uint period, IObservable<double> offset = null) {
             return source.Max_V2(period);
         }
-        public static IObservable<double> Min(this IObservable<double> source, uint period) {
+        /// <summary>
+        /// Tick based Max . Takes care of adjustments for futures roll / continuous pricing
+        /// </summary>
+        public static IObservable<double> Max(this IObservable<Tick> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Price).Max(period, sr.Offset());
+            });
+        }
+        /// <summary>
+        /// OHLC based Max of Close Price.
+        /// TODO: Extend to choose Open High, Low. 
+        /// </summary>
+        public static IObservable<double> Max(this IObservable<OHLC> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Close.Price).Max(period, sr.Offset());
+            });
+        }
+
+        /// <summary>
+        /// Standard Extension of Min
+        /// </summary>
+        public static IObservable<double> Min(this IObservable<double> source, uint period, IObservable<double> offset = null) {
             return source.Min_V2(period);
+        }
+        /// <summary>
+        /// Tick based Min . Takes care of adjustments for futures roll / continuous pricing
+        /// </summary>
+        public static IObservable<double> Min(this IObservable<Tick> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Price).Min(period, sr.Offset());
+            });
+        }
+        /// <summary>
+        /// OHLC based Min of Close Price.
+        /// TODO: Extend to choose Open High, Low. 
+        /// </summary>
+        public static IObservable<double> Min(this IObservable<OHLC> source, uint period) {
+            return source.Publish(sr => {
+                return sr.Select(x => (double)x.Close.Price).Min(period, sr.Offset());
+            });
         }
     }
 }

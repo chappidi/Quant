@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace quant.rx.test
 {
     [TestClass]
-    public class EMA_Test
+    public class EMATest
     {
         [TestMethod]
         public void EMA_Test_1()

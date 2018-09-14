@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace quant.rx.test
 {
     [TestClass]
-    public class LWMA_Test
+    public class LWMATest
     {
         /// <summary>
         /// Data from

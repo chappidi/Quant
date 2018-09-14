@@ -54,5 +54,28 @@ namespace quant.rx.test
                 128.4715, 128.0934, 128.6506, 129.1381, 128.6406 };
             items.ToObservable().Max(14).Subscribe(x => Trace.WriteLine(x));
         }
+        [TestMethod]
+        public void Perf_Test()
+        {
+            Random rnd = new Random();
+            var data = new List<double>();
+            for (int itr = 0; itr < 1000000; itr++)
+            {
+                data.Add(rnd.Next(1, 5));
+                data.Add(rnd.Next(5, 10));
+                data.Add(rnd.Next(10, 15));
+                data.Add(rnd.Next(15, 20));
+            }
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var cnt = data.ToObservable().Max_V1(500).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
+            sw = new Stopwatch();
+            sw.Start();
+            cnt = data.ToObservable().Max_V2(500).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
+        }
     }
 }

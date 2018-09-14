@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace quant.rx.test
 {
     [TestClass]
-    public class WSMA_Test
+    public class WSMATest
     {
         [TestMethod]
         public void WSMA_Test_1()

@@ -19,6 +19,7 @@ namespace quant.rx.test
             string va = null;
             items.ToObservable().Publish(sr => {
                 sr.Min_V1(3).Subscribe(x => v1 = x.ToString());
+
                 sr.Min(3).Subscribe(x => va = x.ToString());
                 return sr;
             }).Subscribe(x => {
@@ -32,14 +33,16 @@ namespace quant.rx.test
             double[] items = { 27, 19, 08, 17, 18, 13, 23, 43, 24, 29, 15, 39, 38, 61, 36 };
 
             string v1 = null;
+            string v3 = null;
             string va = null;
             items.ToObservable().Publish(sr => {
                 sr.Max_V1(3).Subscribe(x => v1 = x.ToString());
+                sr.Max_V3(3).Subscribe(x => v3 = x.ToString());
                 sr.Max(3).Subscribe(x => va = x.ToString());
                 return sr;
             }).Subscribe(x => {
-                Debug.Assert(va == v1);
-                Trace.WriteLine($"{x}\t{va}\t{v1}");
+                Debug.Assert(va == v1 && v1 == v3);
+                Trace.WriteLine($"{x}\t{va}\t{v1}\t{v3}");
             });
         }
         [TestMethod]
@@ -71,9 +74,16 @@ namespace quant.rx.test
             var cnt = data.ToObservable().Max_V1(500).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
+
             sw = new Stopwatch();
             sw.Start();
             cnt = data.ToObservable().Max_V2(500).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
+
+            sw = new Stopwatch();
+            sw.Start();
+            cnt = data.ToObservable().Max_V3(500).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
         }

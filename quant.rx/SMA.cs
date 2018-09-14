@@ -106,7 +106,7 @@ namespace quant.rx
     /// <summary>
     /// Local Extension.
     /// </summary>
-    public static class SMAExt {
+    internal static class SMAExt {
         /// <summary>
         /// VERSION 1: basic raw
         /// </summary>
@@ -120,7 +120,7 @@ namespace quant.rx
             return new SMA_V2(source, period);
         }
         /// <summary>
-        /// VERSION 3:  Using RingBuffer( Performance and Roll Adjustments)
+        /// VERSION 3:  Using RingWnd( Performance and Roll Adjustments)
         /// Performance: Avoid Rollingwindow create Tuples.
         /// </summary>
         internal static IObservable<double> SMA_V3(this IObservable<double> source, uint period, IObservable<double> offset = null)

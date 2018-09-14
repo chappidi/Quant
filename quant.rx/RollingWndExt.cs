@@ -97,7 +97,7 @@ namespace quant.rx
         /// <param name="period"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        static IObservable<double> ABC(this IObservable<double> source, uint period, Func<double, double, bool> func)
+        internal static IObservable<double> ABC(this IObservable<double> source, uint period, Func<double, double, bool> func)
         {
             return Observable.Create<double>(obs => {
                 var que = new LinkedList<double>();
@@ -121,25 +121,5 @@ namespace quant.rx
                     }, obs.OnError, obs.OnCompleted);
             });
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> Max(this IObservable<double> source, uint period) {
-            return source.ABC(period, (x, y) => ((x - y) > 0.0000001));
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        public static IObservable<double> Min(this IObservable<double> source, uint period) {
-            return source.ABC(period, (x, y) => ((x - y) < 0.0000001));
-        }
-
     }
 }

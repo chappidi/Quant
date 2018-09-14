@@ -49,7 +49,7 @@ namespace quant.rx.test
         {
             Random rnd = new Random();
             var data = new List<double>();
-            for (int itr = 0; itr < 10000000; itr++)
+            for (int itr = 0; itr < 1000000; itr++)
             {
                 data.Add(rnd.Next(1, 5));
                 data.Add(rnd.Next(5, 10));
@@ -58,12 +58,12 @@ namespace quant.rx.test
             }
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var cnt = data.ToObservable().AroonUp_V1(24).Count().Wait();
+            var cnt = data.ToObservable().AroonUp_V1(240).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
             sw = new Stopwatch();
             sw.Start();
-            cnt = data.ToObservable().AroonUp_V2(24).Count().Wait();
+            cnt = data.ToObservable().AroonUp_V2(240).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
         }

@@ -29,7 +29,7 @@ namespace quant.rx.test
             items.ToObservable().Publish(sr => {
                 sr.SMA_V1(10).Subscribe(x => sma1 = x.ToString("0.00"));
                 sr.SMA_V2(10).Subscribe(x => sma2 = x.ToString("0.00"));
-                sr.SMA_V3(10).Subscribe(x => sma3 = x.ToString("0.00"));
+                sr.SMA_V4(10).Subscribe(x => sma3 = x.ToString("0.00"));
                 return sr;
             }).Subscribe(val => {
                 Debug.Assert(sma1 == sma2 && sma1 == sma3);
@@ -41,7 +41,7 @@ namespace quant.rx.test
         {
             Random rnd = new Random();
             var data = new List<double>();
-            for(int itr =0; itr < 10000000; itr++) {
+            for(int itr =0; itr < 1000000; itr++) {
                 data.Add(rnd.Next(1, 5));
                 data.Add(rnd.Next(5, 10));
                 data.Add(rnd.Next(10, 15));
@@ -49,12 +49,12 @@ namespace quant.rx.test
             }
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var cnt = data.ToObservable().SMA_V2(100).Count().Wait();
+            var cnt = data.ToObservable().SMA_V3(100).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
             sw = new Stopwatch();
             sw.Start();
-            cnt = data.ToObservable().SMA_V3(100).Count().Wait();
+            cnt = data.ToObservable().SMA_V4(100).Count().Wait();
             sw.Stop();
             Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
         }

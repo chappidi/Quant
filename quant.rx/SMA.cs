@@ -127,6 +127,13 @@ namespace quant.rx
         {
             return new SMA_V3(source, period, offset);
         }
+        /// <summary>
+        /// based on Running Total
+        /// </summary>
+        internal static IObservable<double> SMA_V4(this IObservable<double> source, uint period, IObservable<double> offset = null)
+        {
+            return source.SUM(period, offset).Select(val => val / period);
+        }
     }
 
     /// <summary>

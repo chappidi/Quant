@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using quant.common;
@@ -13,6 +14,60 @@ using quant.common;
 /// </summary>
 namespace quant.rx
 {
+    class Variance : IObservable<double>
+    {
+        readonly IObservable<double> _source;
+        readonly IObservable<double> _offset;
+        readonly uint _period;
+        // variables
+        readonly RingWnd<double> _ring = null;          // buffer of elements
+        uint _count = 0;
+        double _total = 0;
+        double _Avg = 0;
+
+        #region ctor
+        public Variance(IObservable<double> source, uint period, IObservable<double> offset = null)
+        {
+            _source = source;
+            _offset = offset;
+            _period = period;
+
+            _ring = new RingWnd<double>(period);
+        }
+        #endregion
+        void OnVal(double newVal, double oldVal, IObserver<double> obsvr)
+        {
+            if (_count < _period) {
+                _count++;
+                // buffer full. calculate first Variance
+                if (_count == _period) {
+                    _Avg = _ring.buffer.Average();
+                    _total = _ring.buffer.Sum(d => Math.Pow(d - _Avg, 2));
+                }
+            }
+            else {
+                var oldAvg = _Avg;
+                var delta = (newVal - oldVal) / _period;
+                var newAvg = _Avg = oldAvg + delta;
+                _total += (newVal - oldVal) * (newVal + oldVal - oldAvg - newAvg);
+            }
+            if (_count == _period) 
+                obsvr.OnNext(_total / _period);
+        }
+        #region IObservable
+        public IDisposable Subscribe(IObserver<double> obsvr) {
+            var ret = new CompositeDisposable();
+            if (_offset != null) {
+                ret.Add(_offset.Subscribe(ofst => {
+                    //empty for now
+                }));
+            }
+            ret.Add(_source.Subscribe(val => OnVal(val, _ring.Enqueue(val), obsvr), obsvr.OnError, obsvr.OnCompleted));
+            return ret;
+        }
+        #endregion
+    }
+
     /// <summary>
     /// local extensions
     /// </summary>
@@ -21,8 +76,7 @@ namespace quant.rx
         internal static double Variance(this IList<double> values)
         {
             // edge condition optimization
-            if (values.Count <= 1)
-                return 0;
+            if (values.Count <= 1)  return 0;
             //Compute the Average
             double avg = values.Average();
             //Perform the Sum of (value-avg)^2
@@ -48,9 +102,7 @@ namespace quant.rx
                 double Avg = 0;
                 double total = 0;
                 uint count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (val) =>
-                    {
+                return source.RollingWindow(period).Subscribe(val => {
                         if (count < period)
                         {
                             buffer[count] = val.Item1;
@@ -83,6 +135,10 @@ namespace quant.rx
         internal static IObservable<double> StdDev_V2(this IObservable<double> source, uint period, IObservable<double> offset = null)
         {
             return source.Variance(period, offset).Select(v => Math.Sqrt(v));
+        }
+        internal static IObservable<double> StdDev_V3(this IObservable<double> source, uint period, IObservable<double> offset = null)
+        {
+            return new Variance(source, period, offset).Select(v => Math.Sqrt(v));
         }
     }
     /// <summary>

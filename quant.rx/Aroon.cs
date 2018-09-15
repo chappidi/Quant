@@ -10,10 +10,11 @@ using quant.common;
 /// </summary>
 namespace quant.rx
 {
+    public enum Aroon {Up, Down};
     /// <summary>
     /// Local extensions
     /// </summary>
-    internal static class ArronExt
+    internal static class AroonExt
     {
         internal static IObservable<double> AroonDown_V1(this IObservable<double> source, int period)
         {
@@ -49,6 +50,11 @@ namespace quant.rx
     /// </summary>
     public static partial class QuantExt
     {
+        public static IObservable<double> Aroon(this IObservable<double> source, Aroon type, uint period)
+        {
+            return (type == rx.Aroon.Down) ? source.AroonDown_V2(period) : source.AroonUp_V2(period);
+        }
+
         public static IObservable<double> AroonDown(this IObservable<double> source, uint period)
         {
             return source.AroonDown_V2(period);

@@ -15,15 +15,12 @@ namespace quant.rx
     {
         public TSource Data { get; set; }
         public uint Pos { get; set; } = 0;
-        public DATA_POS(TSource val)
-        {
-            Data = val;
-        }
+        public DATA_POS(TSource val) { Data = val; }
     }
     /// <summary>
-    /// 
+    /// https://stackoverflow.com/questions/14823713/efficient-rolling-max-and-min-window
     /// </summary>
-    internal class MaxMin : IObservable<DATA_POS<double>>
+    class MaxMin : IObservable<DATA_POS<double>>
     {
         readonly IObservable<double> _source;
         readonly IObservable<double> _offset;
@@ -35,8 +32,7 @@ namespace quant.rx
         uint _count = 0;                                // count of elements
 
         #region ctor
-        public MaxMin(IObservable<double> source, uint period, Func<double, double, bool> func, IObservable<double> offset = null)
-        {
+        public MaxMin(IObservable<double> source, uint period, Func<double, double, bool> func, IObservable<double> offset = null) {
             _source = source;
             _offset = offset;
             _period = period;
@@ -66,8 +62,7 @@ namespace quant.rx
                     lnkQue.RemoveFirst();
             }
             // Step 4: New Item is going to be added, adjust position index to reflect it
-            foreach (var itm in lnkQue)
-            {
+            foreach (var itm in lnkQue) {
                 itm.Pos++;
             }
             // Step 5: cache item and its position
@@ -77,12 +72,9 @@ namespace quant.rx
         {
             OnNext(newVal, _ring.Enqueue(newVal));
             //send outgoing
-            if (_count >= (_period - 1))
-            {
+            if (_count >= (_period - 1)) {
                 obsvr.OnNext(lnkQue.First.Value);
-            }
-            else
-            {
+            } else {
                 _count++;
             }
         }
@@ -90,10 +82,17 @@ namespace quant.rx
         public IDisposable Subscribe(IObserver<DATA_POS<double>> obsvr)
         {
             var ret = new CompositeDisposable();
-            if (_offset != null)
-            {
+            if (_offset != null) {
                 ret.Add(_offset.Subscribe(ofst => {
-                    // empty for now
+                    // adjust add the values in buffer
+                    for (int itr = 0; itr < _count; ++itr) {
+                        long idx = (_ring.head + itr) % _period;
+                        _ring.buffer[idx] += ofst;
+                    }
+                    // adjust values in lnkQue
+                    foreach (var itm in lnkQue) {
+                        itm.Data += ofst;
+                    }
                 }));
             }
             ret.Add(_source.Subscribe(val => OnNext(val, obsvr), obsvr.OnError, obsvr.OnCompleted));
@@ -106,20 +105,12 @@ namespace quant.rx
     /// </summary>
     internal static class MaxMinExt
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <param name="func"></param>
-        /// <returns></returns>
         internal static IObservable<double> ABC(this IObservable<double> source, uint period, Func<double, double, bool> func)
         {
             return Observable.Create<double>(obs => {
                 var que = new LinkedList<double>();
                 double count = 0;   // count of elements
-                return source.RollingWindow(period).Subscribe(
-                    (val) => {
+                return source.RollingWindow(period).Subscribe(val => {
                         // val < Que.Last.Value
                         while (que.Last != null && func(val.Item1, que.Last.Value))
                             que.RemoveLast();
@@ -151,7 +142,9 @@ namespace quant.rx
         {
             return source.Buffer(period, 1).Where(x => x.Count == period).Select(x => x.Min());
         }
-
+        /// <summary>
+        /// No adjustments for Roll
+        /// </summary>
         internal static IObservable<double> Max_V2(this IObservable<double> source, uint period)
         {
             return source.ABC(period, (x, y) => ((x - y) > 0.0000001));
@@ -160,7 +153,9 @@ namespace quant.rx
         {
             return source.ABC(period, (x, y) => ((x - y) < 0.0000001));
         }
-        // New Implementation
+        /// <summary>
+        /// Implementation with support to adjust for future rolls
+        /// </summary>
         internal static IObservable<DATA_POS<double>> Max_V3(this IObservable<double> source, uint period, IObservable<double> offset = null)
         {
             return new MaxMin(source, period, (x, y) => ((x - y) > 0.0000001), offset);

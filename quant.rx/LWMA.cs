@@ -57,7 +57,7 @@ namespace quant.rx
             // offset calculations
             if (_offset != null) {
                 ret.Add(_offset.Subscribe(ofst => {
-                    // empty
+                    // empty to do ????? 
                 }));
             }
             ret.Add(_source.Subscribe(val => OnVal(val, _ring.Enqueue(val), obsvr), obsvr.OnError, obsvr.OnCompleted));

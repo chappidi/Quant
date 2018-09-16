@@ -16,7 +16,7 @@ namespace quant.rx
         /// </summary>
         public static IObservable<double> SUM(this IObservable<double> source, uint period, IObservable<double> offset = null)
         {
-            return new SUM_V1(source, period, offset);
+            return new SUM_V2(source, period, offset);
         }
         /// <summary>
         /// Tick based SUM . Takes care of adjustments for futures roll / continuous pricing

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace quant.rx
 {
-    internal class SUM_V2 : IObservable<double>
+    class SUM_V2 : IObservable<double>
     {
         readonly IObservable<double> _source;
         readonly IObservable<double> _offset;

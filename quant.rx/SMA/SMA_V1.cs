@@ -11,7 +11,8 @@ namespace quant.rx
         /// VERSION 1: basic raw
         /// </summary>
         internal static IObservable<double> SMA_V1(this IObservable<double> source, int period) {
-            return source.Buffer(period, 1).Where(x => x.Count == period).Select(x => x.Sum() / period);
+//            return source.Buffer(period, 1).Where(x => x.Count == period).Select(x => x.Sum() / period);
+            return source.SUM_V1(period).Select(x => x / period);
         }
     }
 }

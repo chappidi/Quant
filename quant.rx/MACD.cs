@@ -18,13 +18,16 @@ namespace quant.rx
         public static IObservable<double> MACD(this IObservable<double> source, uint fast_period, uint slow_period)
         {
             Debug.Assert(fast_period < slow_period);
-            return source.Publish(sr => sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw));
+            return source.Publish(sr => {
+                return sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw);
+            });
         }
         public static IObservable<double> MACD(this IObservable<OHLC> source, uint fast_period, uint slow_period)
         {
             Debug.Assert(fast_period < slow_period);
-            return null;
-//            return source.Publish(sr => sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw));
+            return source.Publish(sr => {
+                return sr.EMA(fast_period).WithLatestFrom(sr.EMA(slow_period), (fst, slw) => fst - slw);
+            });
         }
     }
 }

@@ -39,7 +39,7 @@ namespace quant.rx.test
         public void FromCSVTest2()
         {
             var srcObs = BarGenMethod.FromCSV(@"D:\GIT_DIR_VSTS\CC_TICK.txt").Publish();
-            srcObs.MVWAP(1500).WithLatestFrom(srcObs, (x, y) => new Tuple<double, Tick>(x, y)).Subscribe(x => { Trace.WriteLine($"{x.Item1.ToString("0.000")}\t{x.Item2.TradedAt}\t{x.Item2.Quantity}\t{x.Item2.Price}"); });
+            srcObs.MVWAPX(1500).WithLatestFrom(srcObs, (x, y) => new Tuple<double, Tick>(x, y)).Subscribe(x => { Trace.WriteLine($"{x.Item1.ToString("0.000")}\t{x.Item2.TradedAt}\t{x.Item2.Quantity}\t{x.Item2.Price}"); });
 //            srcObs.MVWAP(1500).Subscribe(x => { Trace.WriteLine($"OHLC:\t{x.ToString("0.00")}"); });
             var dtStart = DateTime.Now;
             srcObs.Connect();
@@ -50,7 +50,7 @@ namespace quant.rx.test
         {
             var srcObs = BarGenMethod.FromCSV(@"D:\GIT_DIR_VSTS\CC_TICK.txt").ToList().Wait();
             var dtStart = DateTime.Now;
-            var vwObs = srcObs.ToObservable().Publish(x => x.MVWAP(1500).OHLC(x, 20));
+            var vwObs = srcObs.ToObservable().Publish(x => x.MVWAPX(1500).OHLC(x, 20));
             vwObs.Subscribe(x => { /*Trace.WriteLine($"OHLC:\t{x.Open.Time.ToEST()}\t{x.Close.Time.ToEST()}\tVOL:{x.Volume}\t{x.High.Price - x.Low.Price}");*/ });
             Trace.WriteLine($"{(DateTime.Now - dtStart).TotalMilliseconds}");
         }

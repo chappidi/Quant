@@ -16,7 +16,7 @@ namespace quant.rx
         /// <param name="tkSrc"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public static IObservable<OHLC> OHLC(this MVWAP source, IObservable<Tick> tkSrc, uint range)
+        public static IObservable<OHLC> OHLC(this MVWAP_V1 source, IObservable<Tick> tkSrc, uint range)
         {
             return Observable.Create<OHLC>(obs => {
                 // variables

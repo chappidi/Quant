@@ -28,13 +28,10 @@ namespace quant.rx
         void OnVal(double newVal, double oldVal, IObserver<double> obsvr)
         {
             // buffer not full
-            if (_count < _period)
-            {
+            if (_count < _period) {
                 _count++;
                 _total += newVal;
-            }
-            else
-            {
+            } else {
                 _total += newVal - oldVal;
             }
         }
@@ -45,10 +42,8 @@ namespace quant.rx
             // offset calculations are associated with future product rolls.
             if (_offset != null)
             {
-                ret.Add(_offset.Subscribe(ofst =>
-                {
-                    for (int itr = 0; itr < _count; ++itr)
-                    {
+                ret.Add(_offset.Subscribe(ofst => {
+                    for (int itr = 0; itr < _count; ++itr) {
                         long idx = (_ring.head + itr) % _period;
                         _ring.buffer[idx] += ofst;
                     }
@@ -56,8 +51,7 @@ namespace quant.rx
                 }));
             }
             // data subscription
-            ret.Add(_source.Subscribe(val =>
-            {
+            ret.Add(_source.Subscribe(val => {
                 OnVal(val, _ring.Enqueue(val), obsvr);                  //    calculate                
                 if (_count == _period) obsvr.OnNext(_total);           //     publish
             }, obsvr.OnError, obsvr.OnCompleted));

@@ -69,5 +69,27 @@ namespace quant.rx.test
             });
             srcObs.Connect();
         }
+        [TestMethod]
+        public void ABC()
+        {
+            var sbjt = new Subject<QTY_PX>();
+            sbjt.Publish(src => {
+                var xyz = src.SelectMany(x => Observable.Range(0, (int)x.QTY).Select(y => x.PX)).SUM(3);
+                return src.WithLatestFrom(xyz, (x, y)=> y);
+            }).Select(z => z / 3).Subscribe(x => Trace.WriteLine(x));
+
+
+            //sbjt.SelectMany(x => {
+            //    return Observable.Range(0, (int)x.QTY).Select(y => x.PX).Do(z => { },()=> {
+            //        Trace.WriteLine($"{x}");
+            //    });
+            //}).SUM(2).Select(x => x / 2).Subscribe(x => Trace.WriteLine(x));
+
+            sbjt.OnNext(new QTY_PX(5, 45));
+            sbjt.OnNext(new QTY_PX(4, 46));
+            sbjt.OnNext(new QTY_PX(1, 44));
+            sbjt.OnNext(new QTY_PX(1, 47));
+//            Observable.Range(0, 5).SelectMany(x => Observable.Range(x,x+3)).Subscribe(x => Trace.WriteLine(x));
+        }
    }
 }

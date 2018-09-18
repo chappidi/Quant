@@ -8,8 +8,8 @@ namespace quant.common
 
     public class QTY_PX
     {
-        public uint QTY { get; }
-        public double PX { get; }
+        public uint QTY { get; internal set; }
+        public double PX { get; internal set; }
         public double PxVol => PX * QTY;
         public QTY_PX(uint qty, double price) { QTY = qty; PX = price; }
     }

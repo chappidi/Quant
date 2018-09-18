@@ -31,15 +31,13 @@ namespace quant.rx
             // if volume exceeded the limit
             while (Vol > WND_SIZE)
             {
-                // remove  old value
                 var oldTck = que.First.Value;
-                que.RemoveFirst();
-                // if removed quantity is a lot more than needed
+                // if quantity is a lot more than needed
                 if (oldTck.QTY + WND_SIZE > Vol) {
                     // find amount to reduce
                     uint diff = Vol - WND_SIZE;
-                    // add back the difference
-                    que.AddFirst(new QTY_PX(oldTck.QTY - diff, oldTck.PX));
+                    // change qty by the difference
+                    oldTck.QTY -= diff;
                     // reduce the aggregate amounts
                     pxVol -= oldTck.PX * diff;
                     Vol -= diff;
@@ -48,6 +46,7 @@ namespace quant.rx
                     // reduce the aggregate amounts
                     pxVol -= oldTck.PxVol;
                     Vol -= oldTck.QTY;
+                    que.RemoveFirst();
                 }
             }
             // count matches window size
@@ -60,7 +59,12 @@ namespace quant.rx
         {
             var ret = new CompositeDisposable();
             if (_offset != null) {
-                // empty
+                ret.Add(_offset.Subscribe(ofst => {
+                    foreach (var itm in que) {
+                        itm.PX += ofst;
+                    }
+                    pxVol += ofst * Vol;
+                }));
             }
             ret.Add(_source.Subscribe(val => OnVal(val, obsvr), obsvr.OnError, obsvr.OnCompleted));
             return ret;

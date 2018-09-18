@@ -71,4 +71,14 @@ namespace quant.rx
         }
         #endregion
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    internal static class MVWAPV2Ext
+    {
+        internal static IObservable<double> MVWAP_V2(this IObservable<QTY_PX> source, uint period, IObservable<double> offset = null)
+        {
+            return new MVWAP_V2(source, period, offset);
+        }
+    }
 }

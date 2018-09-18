@@ -47,17 +47,44 @@ namespace quant.rx.test
                 new QTY_PX(16, 1.8)
             };
 
-            string vw1 = null;
             string vw2 = null;
             string vw3 = null;
+            string vw4 = null;
             items.ToObservable().Publish(sr => {
-//                sr.MVWAP_V3(6).Subscribe(x => vw1 = x.ToString("0.00"));
-                sr.MVWAP_V4(6).Subscribe(x => vw3 = x.ToString("0.00"));
+                sr.MVWAP_V2(6).Subscribe(x => vw2 = x.ToString("0.00"));
+                sr.MVWAP_V3(6).Subscribe(x => vw3 = x.ToString("0.00"));
+                sr.MVWAP_V4(6).Subscribe(x => vw4 = x.ToString("0.00"));
                 return sr;
             }).Subscribe(val => {
-//                Debug.Assert(vw1 == vw2 && vw1 == vw2);
-                Trace.WriteLine($"\t{val.PX.ToString("0.00")}\t{vw1}\t{vw2}\t{vw3}");
+//                Debug.Assert(vw4 == vw2 && vw4 == vw3);
+                Trace.WriteLine($"\t{val.PX.ToString("0.00")}\t{vw2}\t{vw3}\t{vw4}");
             });
         }
+        [TestMethod]
+        public void Perf_Test()
+        {
+            Random rnd = new Random();
+            var data = new List<QTY_PX>();
+            for (int itr = 0; itr < 1000000; itr++)
+            {
+                data.Add(new QTY_PX((uint)rnd.Next(1, 5), rnd.Next(5, 20)));
+            }
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var cnt = data.ToObservable().MVWAP_V2(1000).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"V2: {sw.ElapsedMilliseconds}\t{cnt}");
+            sw = new Stopwatch();
+            sw.Start();
+            cnt = data.ToObservable().MVWAP_V3(1000).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"V3: {sw.ElapsedMilliseconds}\t{cnt}");
+            sw = new Stopwatch();
+            sw.Start();
+            cnt = data.ToObservable().MVWAP_V4(1000).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"V4: {sw.ElapsedMilliseconds}\t{cnt}");
+        }
+
     }
 }

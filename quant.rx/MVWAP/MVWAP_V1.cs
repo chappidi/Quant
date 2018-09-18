@@ -7,6 +7,9 @@ using quant.common;
 
 namespace quant.rx
 {
+    /// <summary>
+    /// TOBE DELETED
+    /// </summary>
     public class MVWAP_V1 : IObservable<double>
     {
         Dictionary<Security, double> symOff = new Dictionary<Security, double>();

@@ -98,9 +98,9 @@ namespace quant.rx
         /// <param name="source"></param>
         /// <param name="period"></param>
         /// <returns></returns>
-        public static MVWAP MVWAP(this IObservable<Tick> source, uint period)
+        public static MVWAP_V1 MVWAPX(this IObservable<Tick> source, uint period)
         {
-            return new MVWAP(source, period);
+            return new MVWAP_V1(source, period);
         }
     }
 }

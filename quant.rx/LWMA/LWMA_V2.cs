@@ -50,7 +50,14 @@ namespace quant.rx
             // offset calculations
             if (_offset != null) {
                 ret.Add(_offset.Subscribe(ofst => {
-                    // empty to do ????? 
+                    //step 1
+                    _weighted += ofst * m_weight;
+                    // step 2
+                    for (int itr = 0; itr < _count; ++itr) {
+                        long idx = (_ring.head + itr) % _period;
+                        _ring.buffer[idx] += ofst;
+                    }
+                    _total += ofst * _count;
                 }));
             }
             ret.Add(_source.Subscribe(val => OnVal(val, _ring.Enqueue(val), obsvr), obsvr.OnError, obsvr.OnCompleted));

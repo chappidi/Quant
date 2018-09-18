@@ -5,6 +5,14 @@ using System.Text;
 namespace quant.common
 {
     public enum Aggressor { NA, Buy, Sell }
+
+    public class QTY_PX
+    {
+        public uint QTY { get; internal set; }
+        public double PX { get; internal set; }
+        public double PxVol => PX * QTY;
+        public QTY_PX(uint qty, double price) { QTY = qty; PX = price; }
+    }
     /// <summary>
     /// represents tick data of a given Security
     /// </summary>

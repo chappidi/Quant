@@ -17,7 +17,7 @@ namespace quant.rx
         /// </summary>
         public static IObservable<double> SMA(this IObservable<double> source, uint period, IObservable<double> offset = null) {
 //            return source.SMA_V2(period);
-            return source.SMA_V3(period, offset);
+            return source.SMA_V4(period, offset);
         }
         /// <summary>
         /// Tick based SMA . Takes care of adjustments for futures roll / continuous pricing

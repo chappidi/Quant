@@ -32,16 +32,18 @@ namespace quant.rx.test
         [TestMethod]
         public void LWMA_Test_2()
         {
-            double[] items = { 90.91, 90.83, 90.28, 90.36, 90.90, 89.45, 56.67, 33.45 };
+            double[] items = { 90.91, 90.83, 90.28, 90.36, 90.90, 89.45, 56.67, 33.45, 55, 67, 89 };
             string lwma1 = null;
             string lwma2 = null;
+            string lwma3 = null;
             items.ToObservable().Publish(sr => {
                 sr.LWMA_V1(5).Subscribe(x => lwma1 = x.ToString("0.00"));
                 sr.LWMA_V2(5).Subscribe(x => lwma2 = x.ToString("0.00"));
+                sr.LWMA_V3(5).Subscribe(x => lwma3 = x.ToString("0.00"));
                 return sr;
             }).Subscribe(val => {
                 Debug.Assert(lwma1 == lwma2);
-                Trace.WriteLine($"{val.ToString("0.00")}\t{lwma1}\t{lwma2}");
+                Trace.WriteLine($"{val.ToString("0.00")}\t{lwma1}\t{lwma2}\t{lwma3}");
             });
         }
         [TestMethod]

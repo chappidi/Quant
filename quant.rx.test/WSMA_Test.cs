@@ -34,5 +34,31 @@ namespace quant.rx.test
                 Trace.WriteLine($"{val.ToString("0.00")}\t{wsma1}\t{wsma2}");
             });
         }
+        /// <summary>
+        /// Basic Implementation
+        /// http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:relative_strength_index_rsi
+        /// </summary>
+        [TestMethod]
+        public void WSMA_Test_2()
+        {
+            double[] items = {
+                0.0000, 0.0595, 0.0000, 0.7154, 0.4986,
+                0.2691, 0.3290, 0.4188, 0.2393, 0.0000,
+                0.1397, 0.0000, 0.6680, 0.0000, 0.0000,
+                0.0300, 0.3788, 0.0000, 0.0000, 0.5683,
+                0.0399, 0.0000, 0.7378, 0.0000, 0.0000,
+                0.0000, 0.1495, 0.0398, 0.3491, 0.0000,
+                0.0000, 0.4686, 0.0000 };
+            string wsma1 = null;
+            string wsma2 = null;
+            items.ToObservable().Publish(sr => {
+                sr.WSMA_V1(14).Subscribe(x => wsma1 = x.ToString("0.000"));
+                sr.WSMA_V2(14).Subscribe(x => wsma2 = x.ToString("0.000"));
+                return sr;
+            }).Subscribe(val => {
+                Debug.Assert(wsma1 == wsma2);
+                Trace.WriteLine($"{val.ToString("0.000")}\t{wsma1}\t{wsma2}");
+            });
+        }
     }
 }

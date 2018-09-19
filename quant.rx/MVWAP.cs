@@ -13,7 +13,8 @@ namespace quant.rx
     public static partial class QuantExt
     {
         public static IObservable<double> MVWAP(this IObservable<QTY_PX> source, uint period, IObservable<double> offset = null) {
-            return new MVWAP_V2(source, period, offset);
+            return source.MVWAP_V4(period, offset);
+//            return new MVWAP_V2(source, period, offset);
         }
 
         public static IObservable<double> MVWAP(this IObservable<Tick> source, uint period) {

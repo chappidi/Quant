@@ -52,7 +52,7 @@ namespace quant.rx
             }
             ret.Add(_source.Subscribe(val => {
                 // calculate  ( Insert QTY times)
-                for(int itr =0; itr++ < val.QTY; itr++)
+                for(int itr =0; itr < val.QTY; itr++)
                     OnVal(val.PX, _ring.Enqueue(val.PX));
                 // count matches window size  publish
                 if (_count == _period)
@@ -61,5 +61,15 @@ namespace quant.rx
             return ret;
         }
         #endregion
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    internal static class MVWAPV3Ext
+    {
+        internal static IObservable<double> MVWAP_V3(this IObservable<QTY_PX> source, uint period, IObservable<double> offset = null)
+        {
+            return new MVWAP_V3(source, period, offset);
+        }
     }
 }

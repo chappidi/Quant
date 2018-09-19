@@ -20,7 +20,7 @@ namespace quant.rx
         /// Standard Extension
         /// </summary>
         public static IObservable<double> LWMA(this IObservable<double> source, uint period, IObservable<double> offset = null) {
-            return source.LWMA_V2(period, offset);
+            return source.LWMA_V3(period, offset);
         }
         /// <summary>
         /// Tick based WSMA . Takes care of adjustments for futures roll / continuous pricing

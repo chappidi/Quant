@@ -11,37 +11,6 @@ namespace quant.rx
 {
     public static class BarGenMethod
     {
-        static TimeZoneInfo est = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        public static DateTime ToEST(this DateTime utc) => TimeZoneInfo.ConvertTime(utc, est);
-
-        public static IEnumerable<IList<OHLC>> OHLCFromCSV(string file)
-        {
-            var idx = 0;
-            IList<OHLC> retVal = new List<OHLC>();
-            foreach(var ln in File.ReadLines(file))
-            {
-                var row = ln.Replace("\"", "").Split(',');
-                if(idx != int.Parse(row[0]))
-                {
-                    if(retVal.Count > 0)
-                        yield return retVal;
-                    idx = int.Parse(row[0]);
-                    retVal = new List<OHLC>();
-                }
-                OHLC ohlc = null; //new OHLC(row);
-                retVal.Add(ohlc);
-            }
-        }
-
-        public static IObservable<Tick> FromCSV(string file)
-        {
-            var symbol = Security.Lookup("");
-            return File.ReadLines(file).ToObservable().Skip(1).Select(x =>
-            {
-                var row = x.Replace("\"", "").Split(',');
-                return new Tick(symbol, uint.Parse(row[8]), uint.Parse(row[7]), DateTime.Parse(row[3]));
-            });
-        }
         /// <summary>
         /// 
         /// </summary>
@@ -105,12 +74,6 @@ namespace quant.rx
         /// <returns></returns>
         public static IObservable<OHLC> ByInterval(this IObservable<Tick> source, TimeSpan period) {
             return source.OHLC((ohlc, tck) => (ohlc.Open.TradedAt.Ticks/period.Ticks != tck.TradedAt.Ticks/period.Ticks));
-        }
-        public static IObservable<OHLC> MVWAP_Y(this IObservable<Tick> source, uint period, uint range)
-        {
-            return source.OHLC((ohlc, tck) => {
-                return (ohlc.Volume >= period) && (ohlc.High.Price - ohlc.Low.Price >= range);
-            });
         }
     }
 }

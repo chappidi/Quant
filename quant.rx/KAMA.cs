@@ -6,6 +6,9 @@ namespace quant.rx
 {
     /// <summary>
     /// Kaufman Adaptive Moving Average
+    /// https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:kaufman_s_adaptive_moving_average
+    /// Excel Data
+    /// https://stockcharts.com/school/lib/exe/fetch.php?media=chart_school:technical_indicators_and_overlays:kaufman_s_adaptive_moving_average:cs-kama.xls
     /// </summary>
     class KAMA
     {

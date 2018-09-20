@@ -8,7 +8,7 @@ namespace quant.rx
     /// <summary>
     /// https://www.mesasoftware.com/papers/TheInverseFisherTransform.pdf
     /// </summary>
-    public static class TransformExt
+    public static partial class QuantExt
     {
         /// <summary>
         /// 

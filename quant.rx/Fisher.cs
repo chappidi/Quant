@@ -13,8 +13,6 @@ namespace quant.rx
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
         public static IObservable<double> IFish(this IObservable<double> source)
         {
             return Observable.Create<double>(obs => {
@@ -24,6 +22,9 @@ namespace quant.rx
                 }, obs.OnError, obs.OnCompleted);
             });
         }
+        /// <summary>
+        /// 
+        /// </summary>
         public static IObservable<double> Fish(this IObservable<double> source)
         {
             return Observable.Create<double>(obs => {

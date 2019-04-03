@@ -6,6 +6,7 @@ using System.Text;
 using quant.common;
 
 [assembly: InternalsVisibleTo("quant.rx.test")]
+[assembly: InternalsVisibleTo("ohlc.rx.test")]
 
 namespace quant.rx
 {

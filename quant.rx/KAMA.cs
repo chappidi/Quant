@@ -10,7 +10,11 @@ namespace quant.rx
     /// Excel Data
     /// https://stockcharts.com/school/lib/exe/fetch.php?media=chart_school:technical_indicators_and_overlays:kaufman_s_adaptive_moving_average:cs-kama.xls
     /// </summary>
-    class KAMA
+    public static partial class QuantExt
     {
+        public static IObservable<double> KAMA(this IObservable<double> source, uint periodER, uint periodFast, uint periodSlow)
+        {
+            return null;
+        }
     }
 }

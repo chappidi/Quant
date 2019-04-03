@@ -14,7 +14,7 @@ namespace ohlc.rx.test
     {
         static string file = "..\\..\\..\\..\\BARS.csv";
         [TestMethod]
-        public void SMA_TEST_1()
+        public void SMA_TEST()
         {
             double? ma1 = null;
             double? ma2 = null;
@@ -31,7 +31,7 @@ namespace ohlc.rx.test
             }
         }
         [TestMethod]
-        public void WSMA_TEST_1()
+        public void WSMA_TEST()
         {
             double? ma1 = null;
             double? ma2 = null;
@@ -48,7 +48,7 @@ namespace ohlc.rx.test
             }
         }
         [TestMethod]
-        public void EMA_TEST_1()
+        public void EMA_TEST()
         {
             double? ma1 = null;
             double? ma2 = null;
@@ -57,6 +57,23 @@ namespace ohlc.rx.test
                 rdr.OHLC().Publish(sr => {
                     sr.Select(x => x.raw).EMA(14).Subscribe(x => ma1 = x);
                     sr.Select(x => x.cnt).EMA(14).Subscribe(x => ma2 = x);
+                    return sr;
+                }).Subscribe(oh => {
+                    Debug.Assert(ma1 == null || Math.Abs((ma2.Value - ma1.Value) - oh.ofst) <= 0.0001);
+                    Trace.WriteLine($"{oh.raw}\t{ma1?.ToString("0.00")}\t{ma2?.ToString("0.00")}\t{ma2 - ma1}");
+                });
+            }
+        }
+        [TestMethod]
+        public void LWMA_TEST()
+        {
+            double? ma1 = null;
+            double? ma2 = null;
+            using (StreamReader rdr = new StreamReader(file))
+            {
+                rdr.OHLC().Publish(sr => {
+                    sr.Select(x => x.raw).LWMA(14).Subscribe(x => ma1 = x);
+                    sr.Select(x => x.cnt).LWMA(14).Subscribe(x => ma2 = x);
                     return sr;
                 }).Subscribe(oh => {
                     Debug.Assert(ma1 == null || Math.Abs((ma2.Value - ma1.Value) - oh.ofst) <= 0.0001);

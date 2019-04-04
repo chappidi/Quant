@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -59,6 +60,7 @@ namespace quant.rx
             var ret = new CompositeDisposable();
             if (_offset != null) {
                 ret.Add(_offset.Subscribe(ofst => {
+                    Debug.Assert(false, "Needs to Implement");
                     //empty for now
                 }));
             }

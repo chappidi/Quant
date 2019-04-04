@@ -64,31 +64,5 @@ namespace quant.rx
                 }, obs.OnError, obs.OnCompleted);
             });
         }
-        /// <summary>
-        /// DEPRICATED. Already Supported by Buffer(period,1). 
-        /// Keeping it for study purpose.
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="period"></param>
-        /// <returns></returns>
-        internal static IObservable<IList<TSource>> RollingBuffer<TSource>(this IObservable<TSource> source, uint period)
-        {
-            // return source.Buffer(period,1);
-
-            return Observable.Create<IList<TSource>>(obs => {
-                LinkedList<TSource> buffer = new LinkedList<TSource>();
-                uint count = 0;          // items in buffer
-                //Create Subscription
-                return source.Subscribe((val) => {
-                    if (count >= period)
-                        buffer.RemoveFirst();
-                    else
-                        count++;
-                    buffer.AddLast(val);
-                    obs.OnNext(buffer.ToList());
-                }, obs.OnError, obs.OnCompleted);
-            });
-        }
     }
 }

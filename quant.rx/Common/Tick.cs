@@ -6,7 +6,11 @@ namespace quant.common
 {
     public enum Aggressor { NA, Buy, Sell }
 
-    public class QTY_PX
+    /// <summary>
+    /// don't want anyone to derive from it (especially Tick)
+    /// 
+    /// </summary>
+    public sealed class QTY_PX
     {
         public uint QTY { get; internal set; }
         public double PX { get; internal set; }

@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
+using quant.common;
 
 /// <summary>
 /// https://www.metatrader5.com/en/terminal/help/indicators/trend_indicators/fama
 /// http://etfhq.com/blog/2010/09/30/fractal-adaptive-moving-average-frama/#How
 /// 
 /// Fractal Adaptive Moving Average 
-/// The advantage of FRAMA is the possibility to follow strong trend movements and to sufficiently slow down at the moments of price consolidation
+/// The advantage of FRAMA is the possibility to follow strong trend movements and 
+///     to sufficiently slow down at the moments of price consolidation
+///     
 /// FRAMA(i) = A(i) * Price(i) + (1 - A(i)) * FRAMA(i-1)
+///          = FRAMA(i-1) + A(i) * (Price(i) - FRAMA(i-1))
 ///     FRAMA(i) — current value of FRAMA
-///     Price(i) — current price
+///     Price(i) — current close price
 ///     FRAMA(i-1) — previous value of FRAMA
 ///     A(i) — current factor of exponential smoothing.
 ///     
 /// A(i) = EXP(-4.6 * (D(i) - 1))
 ///     D(i) — current fractal dimension
+///     D(i) = (Log(N1 + N2) - Log(N3)) / Log(2.0);
 ///
 /// N(Length,i) = (HighestPrice(i) - LowestPrice(i))/Length
 ///     HighestPrice(i) — current maximal value for Length periods;
@@ -58,5 +65,48 @@ namespace quant.rx
             return ret;
         }
         #endregion
+    }
+
+    public static partial class QuantExt
+    {
+        /// <summary>
+        /// Fractional Dimension
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        internal static IObservable<double> FD(this IObservable<OHLC> source, uint period)
+        {
+            uint pd1 = period / 2;
+            uint pd2 = period / 2;
+            return source.Publish(sc => {
+                var HL1 = sc.Select(x => x.High).Max(pd1).Zip(sc.Select(x => x.Low).Min(pd1), (max, min) => (max - min) / pd1);
+                var HL2 = sc.Select(x => x.High).Max(pd2).Zip(sc.Select(x => x.Low).Min(pd2), (max, min) => (max - min) / pd2).Skip((int)pd2);
+                var HL = sc.Select(x => x.High).Max(period).Zip(sc.Select(x => x.Low).Min(period), (max, min) => (max - min) / period);
+                return Observable.When(HL.And(HL1).And(HL2).Then((N, N1, N2) => (Math.Log(N1 + N2) - Math.Log(N)) / Math.Log(2.0)));
+            });
+        }
+        public static IObservable<double> FRAMA(this IObservable<OHLC> source, uint period)
+        {
+            return source.Publish(sc => {
+                return Observable.Create<double>(obs => {
+                    var ret = new CompositeDisposable();
+                    double _prev = 0;
+                    double _alpha = 1;
+                    ret.Add(sc.FD(period).Select(fd => Math.Exp(-4.6 * (fd - 1))).Subscribe(alp => {
+                        _alpha = alp;
+                    }));
+                    ret.Add(sc.Offset().Subscribe(ofst => {
+                        if(ofst != 0)
+                            Trace.WriteLine($"OFFSET:{ofst}");
+                    }));
+                    ret.Add(sc.Subscribe(oh => {
+                        _prev = _prev + _alpha * (oh.Close.Price - _prev);
+                        obs.OnNext(_prev);
+                    }));
+                    return ret;
+                }).Skip((int)period-1);
+            });
+        }
     }
 }

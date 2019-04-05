@@ -9,6 +9,10 @@ using quant.common;
 
 namespace quant.rx.test
 {
+    /// <summary>
+    /// sample excel data file
+    /// http://www.etfhq.com/download.php?fileID=9
+    /// </summary>
     [TestClass]
     public class FRAMA_Test
     {

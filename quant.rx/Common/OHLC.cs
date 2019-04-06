@@ -54,6 +54,11 @@ namespace quant.common
         public DateTime Seed { get; set; }
         public Color FillColor => (Close.Price == Open.Price) ? Color.NA : (Close.Price > Open.Price) ? Color.Black : Color.Red;
         #endregion
+        public (int hr, int tr, int lr) DM(OHLC prev)
+        {
+            // To do adjust for Roll
+            return ((int)(this.High.Price - prev.High.Price), (int)TR(prev), (int)(prev.Low.Price - this.Low.Price));
+        }
         public long TR(OHLC prev)
         {
             // To do check the logic

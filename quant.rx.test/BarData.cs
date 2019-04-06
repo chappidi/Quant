@@ -1,5 +1,7 @@
-﻿using System;
+﻿using quant.common;
+using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace quant.rx.test
@@ -208,5 +210,20 @@ namespace quant.rx.test
                 };
             }
         }
+        public static IObservable<OHLC> OHLC
+        {
+            get
+            {
+                return DATA.ToObservable().Select(bd => {
+                    var sec = Security.Lookup("DMK3");
+                    var oh = new OHLC(new Tick(sec, 1, (uint)(bd.Open * 100), bd.Date));
+                    oh.Add(new Tick(sec, 1, (uint)(bd.High * 100), bd.Date));
+                    oh.Add(new Tick(sec, 1, (uint)(bd.Low * 100), bd.Date));
+                    oh.Add(new Tick(sec, 1, (uint)(bd.Close * 100), bd.Date));
+                    return oh;
+                });
+            }
+        }
+
     }
 }

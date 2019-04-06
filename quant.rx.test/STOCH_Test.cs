@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using quant.common;
 
 namespace quant.rx.test
 {
@@ -33,9 +34,9 @@ namespace quant.rx.test
         [TestMethod]
         public void STOCH_Test_2()
         {
-            var data = BarData.DATA;
-            // Convert to OHLC
-//            data.ToObservable().STOCH(5).Subscribe(x => Trace.WriteLine(x));
+            BarData.OHLC.Publish(sc=> {
+                return sc.STOCH(5);
+            }).Subscribe(x => Trace.WriteLine(x));
         }
     }
 }

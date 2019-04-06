@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text;
 using quant.common;
 
@@ -16,30 +17,12 @@ namespace quant.rx
     /// </summary>
     public static partial class QuantExt
     {
-        internal static IObservable<double> DM(this IObservable<OHLC> source)
-        {
-            return null;
+        internal static IObservable<double> DX(this IObservable<(double plsDI, double mnsDI)> source) {
+            return source.Select(x => (diffDI: Math.Abs(x.plsDI - x.mnsDI), sumDI: x.plsDI + x.mnsDI)).Select(x => (100 * x.diffDI) / x.sumDI);
         }
-        /// <summary>
-        /// Plus Directional Indicator (+DI)
-        /// </summary>
-        public static IObservable<double> PlusDI(this IObservable<double> source, uint period)
+        public static IObservable<double> ADX(this IObservable<OHLC> source, uint period)
         {
-            return null;
-        }
-        /// <summary>
-        /// Minus Directional Indicator (-DI)
-        /// </summary>
-        public static IObservable<double> MinusDI(this IObservable<double> source, uint period)
-        {
-            return null;
-        }
-        /// <summary>
-        /// Average Directional Index
-        /// </summary>
-        public static IObservable<double> ADX(this IObservable<double> source, uint period)
-        {
-            return null;
+            return source.DMI(period).DX().WSMA(period);
         }
 
     }

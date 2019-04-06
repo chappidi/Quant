@@ -56,8 +56,7 @@ namespace ohlc.rx.test
         {
             Band? s1 = null;
             Band? s2 = null;
-            using (StreamReader rdr = new StreamReader(file))
-            {
+            using (StreamReader rdr = new StreamReader(file)) {
                 rdr.OHLC().Publish(sr => {
                     sr.Select(x => x.raw).ABANDS(20,4).Subscribe(x => s1 = x);
                     sr.Select(x => x.cnt).ABANDS(20,4).Subscribe(x => s2 = x);

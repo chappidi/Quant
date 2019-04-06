@@ -41,7 +41,7 @@ namespace quant.rx
         /// </summary>
         public static IObservable<double> CMO(this IObservable<OHLC> source, uint period)
         {
-            return source.Delta().ChandeM(period);
+            return source.Delta().Select(x => (double)x).ChandeM(period);
         }
     }
 }

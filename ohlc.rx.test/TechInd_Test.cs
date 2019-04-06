@@ -68,5 +68,22 @@ namespace ohlc.rx.test
                 });
             }
         }
+        [TestMethod]
+        public void CMO_TEST()
+        {
+            double? s1 = null;
+            double? s2 = null;
+            using (StreamReader rdr = new StreamReader(file))
+            {
+                rdr.OHLC().Publish(sr => {
+                    sr.Select(x => x.raw).CMO(20).Subscribe(x => s1 = x);
+                    sr.Select(x => x.cnt).CMO(20).Subscribe(x => s2 = x);
+                    return sr;
+                }).Subscribe(oh => {
+                    Debug.Assert(s2 == s1);
+                    Trace.WriteLine($"{oh.raw}\t{s1?.ToString("0.00")}\t{s2?.ToString("0.00")}\t{s2 - s1}");
+                });
+            }
+        }
     }
 }

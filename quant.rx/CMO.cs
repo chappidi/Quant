@@ -17,7 +17,7 @@ namespace quant.rx
     /// TotalGain = TGain = gain.MovingTotal(10)
     /// TotalLoss = TLoss = loss.MovingTotal(10)
     /// </summary>
-    public static partial class QuantExt
+    internal static class CMOExt
     {
         internal static IObservable<double> ChandeM(this IObservable<double> source, uint period)
         {
@@ -29,16 +29,14 @@ namespace quant.rx
                 return gain.SMA(period).Zip(loss.SMA(period), (gn, ls) => 100.0 * ((gn - ls) / (gn + ls)));
             });
         }
-        /// <summary>
-        /// 
-        /// </summary>
+    }
+
+    public static partial class QuantExt
+    {
         public static IObservable<double> CMO(this IObservable<double> source, uint period)
         {
             return source.Delta().ChandeM(period);
         }
-        /// <summary>
-        /// 
-        /// </summary>
         public static IObservable<double> CMO(this IObservable<OHLC> source, uint period)
         {
             return source.Delta().Select(x => (double)x).ChandeM(period);

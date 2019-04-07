@@ -66,9 +66,9 @@ namespace quant.rx
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static IObservable<double> Delta(this IObservable<OHLC> source)
+        public static IObservable<int> Delta(this IObservable<OHLC> source)
         {
-            return Observable.Create<double>(obs => {
+            return Observable.Create<int>(obs => {
                 OHLC oldVal = null;
                 return source.Subscribe((newVal) => {
                     if (oldVal != null) {
@@ -78,7 +78,7 @@ namespace quant.rx
                         {
 
                         }
-                        obs.OnNext(newVal.Close.Price - oldVal.Close.Price);
+                        obs.OnNext((int)(newVal.Close.Price - oldVal.Close.Price));
                     }
                     oldVal = newVal;
                 }, obs.OnError, obs.OnCompleted);
@@ -94,7 +94,7 @@ namespace quant.rx
             return source.Delta().RS(period).Select(rs => 100.0 - (100.0 / (1 + rs)));
         }
         public static IObservable<double> RSI(this IObservable<OHLC> source, uint period) {
-            return source.Delta().RS(period).Select(x => 100 - (100 / (1 + x)));
+            return source.Delta().Select(x => (double)x).RS(period).Select(x => 100 - (100 / (1 + x)));
         }
     }
 }

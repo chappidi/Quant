@@ -8,27 +8,22 @@ namespace quant.rx
 {
     /// <summary>
     /// https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
-    /// Upper Band = Simple Moving Average (High * ( 1 + 4 * (High - Low) / (High + Low)))
-    /// Middle Band = Simple Moving Average
-    /// Lower Band = Simple Moving Average(Low* (1 - 4 * (High - Low)/ (High + Low)))
+    /// Upper Band = SMA(High * ( 1 + 4 * (High - Low) / (High + Low)))
+    /// Middle Band = SMA
+    /// Lower Band = SMA(Low * (1 - 4 * (High - Low)/ (High + Low)))    
     /// </summary>
     public static partial class QuantExt
     {
-        public static IObservable<Band> ABAND(this IObservable<OHLC> source, uint period)
+        public static IObservable<Band> ABANDS(this IObservable<OHLC> source, uint period, uint width)
         {
-            return source.Publish(obs => {
-                var factor = obs.Select(oh => 4 * ((double)(oh.High.Price - oh.Low.Price)) / ((double)(oh.High.Price + oh.Low.Price)));
-                factor.Publish(xs => {
-                    var lbx = obs.Zip(xs, (oh, f) => oh.Low.Price * (1.0 - f));
-                    var mbx = obs.Zip(xs, (oh, f) => oh.High.Price * (1.0 + f));
-                    return obs.Zip(xs, (oh, f) => oh.High.Price * (1.0 + f));
+            return source.Publish(sc => {
+                var ftrObs = sc.Select(oh => width * ((double)(oh.High.Price - oh.Low.Price)) / (oh.High.Price + oh.Low.Price));
+                return ftrObs.Publish(xs => {
+                    var upr = sc.Zip(xs, (oh, f) => oh.High.Price * (1.0 + f)).SMA(period/*, sc.Offset()*/);
+                    var lwr = sc.Zip(xs, (oh, f) => oh.Low.Price * (1.0 - f)).SMA(period/*, sc.Offset()*/);
+                    var mid = sc.SMA(20);
+                    return Observable.When(upr.And(mid).And(lwr).Then((u, m, l) => new Band() { UPPER = u, MIDDLE = m, LOWER = l }));
                 });
-                var mb = obs.Select(x => (double)x.Close.Price);
-                var ub = obs.Select(oh => oh.High.Price * (1 + 4 * ((double)(oh.High.Price - oh.Low.Price)) / (oh.High.Price + oh.Low.Price)));
-                var lb = obs.Select(oh => oh.Low.Price * (1 - 4 * ((double)(oh.High.Price - oh.Low.Price)) / (oh.High.Price + oh.Low.Price)));
-
-                var xyz = ub.SMA(period, obs.Offset()).And(mb.SMA(period, obs.Offset())).And(lb.SMA(period, obs.Offset()));
-                return Observable.When(xyz.Then((u, m, l) => new Band { UPPER = u, MIDDLE = m, LOWER = l }));
             });
         }
     }

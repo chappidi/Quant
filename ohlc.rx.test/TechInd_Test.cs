@@ -51,5 +51,39 @@ namespace ohlc.rx.test
                 });
             }
         }
+        [TestMethod]
+        public void ABANDS_TEST()
+        {
+            Band? s1 = null;
+            Band? s2 = null;
+            using (StreamReader rdr = new StreamReader(file)) {
+                rdr.OHLC().Publish(sr => {
+                    sr.Select(x => x.raw).ABANDS(20,4).Subscribe(x => s1 = x);
+                    sr.Select(x => x.cnt).ABANDS(20,4).Subscribe(x => s2 = x);
+                    return sr;
+                }).Subscribe(oh => {
+                    Debug.Assert(s1?.UPPER == s2?.UPPER && s1?.MIDDLE == s2?.MIDDLE && s1?.LOWER == s2?.LOWER);
+                    Trace.WriteLine($"{oh.raw}\t{s1?.UPPER.ToString("0.00")}\t{s2?.UPPER.ToString("0.00")}\t{s2?.UPPER - s1?.UPPER}");
+                    Trace.WriteLine($"\t\t{s1?.LOWER.ToString("0.00")}\t{s2?.LOWER.ToString("0.00")}\t{s2?.LOWER - s1?.LOWER}");
+                });
+            }
+        }
+        [TestMethod]
+        public void CMO_TEST()
+        {
+            double? s1 = null;
+            double? s2 = null;
+            using (StreamReader rdr = new StreamReader(file))
+            {
+                rdr.OHLC().Publish(sr => {
+                    sr.Select(x => x.raw).CMO(20).Subscribe(x => s1 = x);
+                    sr.Select(x => x.cnt).CMO(20).Subscribe(x => s2 = x);
+                    return sr;
+                }).Subscribe(oh => {
+                    Debug.Assert(s2 == s1);
+                    Trace.WriteLine($"{oh.raw}\t{s1?.ToString("0.00")}\t{s2?.ToString("0.00")}\t{s2 - s1}");
+                });
+            }
+        }
     }
 }

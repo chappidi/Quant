@@ -17,20 +17,23 @@ namespace quant.rx
     /// he’d mark when William’s %R touched 0 (indicating overbought conditions)
     /// after five days, if Williams %R reached -15, he’d sell
     /// He applied the opposite strategy if a security was oversold
+    /// 
+    /// Data
+    /// https://stockcharts.com/school/lib/exe/fetch.php?media=chart_school:technical_indicators:williams_r:cs-percentr.xls
     /// </summary>
     public static partial class QuantExt
     {
         static IObservable<double> WilliamsR(this IObservable<OHLC> source, uint period)
         {
-            source.Publish(sr => {
+            return source.Publish(sr => {
                 return sr.Offset().Publish(of => {
-                    sr.Select(x => (double)x.High.Price).Max(period,of);
-                    sr.Select(x => (double)x.Low.Price).Min(period, of);
-                    sr.Select(x => x.Close.Price);
-                    return sr;
+                    var hhObs = sr.Select(x => (double)x.High.Price).Max(period, of);
+                    var llObs = sr.Select(x => (double)x.Low.Price).Min(period, of);
+                    return hhObs.Zip(llObs, (hh, ll) => (hh, ll)).WithLatestFrom(sr, (s, oh) => (s.hh, s.ll, cc: oh.Close.Price));
                 });
+            }).Select(x => {
+                return (x.hh - x.cc) / (x.hh - x.ll) * -100;
             });
-            return null;
         }
     }
 }

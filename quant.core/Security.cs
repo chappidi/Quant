@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace quant.common
+namespace quant.core
 {
     /// <summary>
     /// aka Instrument which can be traded

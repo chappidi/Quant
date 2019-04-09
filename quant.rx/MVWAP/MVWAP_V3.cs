@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Text;
-using quant.common;
+using quant.core;
 
 namespace quant.rx
 {

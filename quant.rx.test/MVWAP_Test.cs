@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using quant.common;
+using quant.core;
 using quant.rx;
 
 namespace quant.rx.test

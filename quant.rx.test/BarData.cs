@@ -1,8 +1,8 @@
-﻿using quant.common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
+using quant.core;
 
 namespace quant.rx.test
 {

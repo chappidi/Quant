@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace quant.common
+[assembly: InternalsVisibleTo("quant.rx")]
+namespace quant.core
 {
     public enum Aggressor { NA, Buy, Sell }
 

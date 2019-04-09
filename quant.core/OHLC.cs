@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace quant.common
+namespace quant.core
 {
     /// <summary>
     /// OHLC = Open High Low Close Ticks

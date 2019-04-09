@@ -16,4 +16,8 @@
     <PackageReference Include="System.Reactive" Version="4.1.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\quant.core\quant.core.csproj" />
+  </ItemGroup>
+
 </Project>

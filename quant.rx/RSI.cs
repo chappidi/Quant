@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using quant.common;
+using quant.core;
 
 [assembly: InternalsVisibleTo("quant.rx.test")]
 [assembly: InternalsVisibleTo("ohlc.rx.test")]

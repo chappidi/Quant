@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using quant.common;
+using quant.core;
 
 /// <summary>
 /// http://jonisalonen.com/2014/efficient-and-accurate-rolling-standard-deviation/

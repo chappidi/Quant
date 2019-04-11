@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
-using quant.common;
+using quant.core;
 
 /// <summary>
 /// Linear Weighted Moving Averages(5) 

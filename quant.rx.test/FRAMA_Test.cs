@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using quant.common;
+using quant.core;
 
 namespace quant.rx.test
 {

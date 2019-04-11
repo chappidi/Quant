@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using quant.common;
+using quant.core;
 
 /// <summary>
 /// https://www.metatrader5.com/en/terminal/help/indicators/trend_indicators/fama

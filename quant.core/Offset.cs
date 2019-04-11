@@ -4,9 +4,9 @@ using System.Reactive.Linq;
 using System.Text;
 using quant.core;
 
-namespace quant.rx
+namespace quant.core
 {
-    public static partial class QuantExt
+    public static partial class CoreExt
     {
         /// <summary>
         /// Find the offset during the roll

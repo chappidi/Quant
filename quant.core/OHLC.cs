@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace quant.core
@@ -111,5 +112,68 @@ namespace quant.core
             return ($"OHLC:\t{Close.Security}\t[{opn} : {cls}]\t[O:{Open.Price} H:{High.Price} L:{Low.Price} C:{Close.Price} V:{Volume}]");
         }
         #endregion
+    }
+    public static class OHLCExt
+    {
+        /// <summary>
+        /// OHLC Generation from source till OnComplete is called
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IObservable<OHLC> OHLC(this IObservable<Tick> source) {
+            return source.Aggregate((OHLC)null, 
+                (oh, tk) => {
+                    // update or create (upsert) OHLC
+                    if (oh != null)
+                        oh.Add(tk);
+                    else
+                        oh = new OHLC(tk);
+                    return oh;
+                });
+        }
+        /// <summary>
+        /// generate stream of OHLC on continuous pricing source
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="durationSelector"></param>
+        /// <returns></returns>
+        internal static IObservable<OHLC> OHLC(this IObservable<Tick> source, Func<OHLC, Tick, bool> durationSelector) {
+            return Observable.Create<OHLC>(obs => {
+                OHLC ohlc = null;
+                return source.Subscribe((tck) => {
+                    if (ohlc == null || durationSelector(ohlc, tck)) {
+                        if(ohlc != null)
+                            obs.OnNext(ohlc);
+                        ohlc = new OHLC(tck);
+                    }
+                    else
+                        ohlc.Add(tck);
+                }, obs.OnError, obs.OnCompleted);
+            });
+        }
+        /// <summary>
+        /// Utility function : can be moved where Bucket() code exists
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IObservable<IList<OHLC>> OHLC(this IObservable<IObservable<Tick>> source)  {
+            return source.SelectMany(x => x.OHLC()).ToList();
+        }
+        /// <summary>
+        /// replaced by above function
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IObservable<IList<OHLC>> OHLC_OLD(this IObservable<IObservable<Tick>> source)
+        {
+            return source.SelectMany(p => p.Aggregate((OHLC)null,
+                (ohlc, td) => {
+                    if (ohlc == null)
+                        ohlc = new OHLC(td);
+                    else
+                        ohlc.Add(td);
+                    return ohlc;
+                })).ToList();
+        }
     }
 }

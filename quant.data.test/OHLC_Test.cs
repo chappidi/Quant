@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using quant.core;
+using quant.futures;
 
 namespace quant.data.test
 {

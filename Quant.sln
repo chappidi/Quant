@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "quant.core", "quant.core\qu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "quant.data", "quant.data\quant.data.csproj", "{4B897CA4-D3A0-495E-B231-A12FA5FEB131}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "quant.data.test", "quant.data.test\quant.data.test.csproj", "{48651ADC-7BFB-441A-949B-29584E561A4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "quant.data.test", "quant.data.test\quant.data.test.csproj", "{48651ADC-7BFB-441A-949B-29584E561A4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

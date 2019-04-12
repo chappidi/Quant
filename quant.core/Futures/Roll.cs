@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Text;
+using quant.core;
 
-namespace quant.core
+namespace quant.futures
 {
     /// <summary>
     /// Extension Methods on Roll
     /// </summary>
-    public static class RollExt
+    internal static class RollExt
     {
         /// <summary>
         /// roll schedule : when to roll and to what security is gven.

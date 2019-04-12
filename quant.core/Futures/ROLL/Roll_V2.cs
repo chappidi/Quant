@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using quant.core;
 
-namespace quant.core
+namespace quant.futures
 {
     /// <summary>
     /// Roll based on dates. capture total volume to identify which contract has high volume and to roll to.

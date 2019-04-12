@@ -27,5 +27,11 @@ namespace quant.rx
                 return sr.Select(x => new QTY_PX(x.Volume, x.Close.Price)).MVWAP(period, sr.Offset());
             });
         }
+        public static IObservable<OHLC> MVWAP(this IObservable<Tick> source, uint period, uint range) {
+            return source.Publish(src => {
+                var bound = src.MVWAP(period).Range(range, src.Offset());
+                return src.Slice(bound).SelectMany(x => x.OHLC());
+            });
+        }
     }
 }

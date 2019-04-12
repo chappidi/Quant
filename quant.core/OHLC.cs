@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace quant.core
@@ -111,5 +112,45 @@ namespace quant.core
             return ($"OHLC:\t{Close.Security}\t[{opn} : {cls}]\t[O:{Open.Price} H:{High.Price} L:{Low.Price} C:{Close.Price} V:{Volume}]");
         }
         #endregion
+    }
+    public static class OHLCExt
+    {
+        /// <summary>
+        /// Aggregates all the Ticks and creates OHLC bar
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IObservable<OHLC> OHLC(this IObservable<Tick> source) {
+            return source.Aggregate((OHLC)null, 
+                (oh, tk) => {
+                    // update or create (upsert) OHLC
+                    if (oh != null)
+                        oh.Add(tk);
+                    else
+                        oh = new OHLC(tk);
+                    return oh;
+                });
+        }
+        /// <summary>
+        /// Aggregates the ticks until the boundary Selector to create OHLC bar
+        /// and starts a new OHLC
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="boundarySelector"></param>
+        /// <returns></returns>
+        internal static IObservable<OHLC> OHLC(this IObservable<Tick> source, Func<OHLC, Tick, bool> boundarySelector) {
+            return Observable.Create<OHLC>(obs => {
+                OHLC ohlc = null;
+                return source.Subscribe((tck) => {
+                    if (ohlc == null || boundarySelector(ohlc, tck)) {
+                        if(ohlc != null)
+                            obs.OnNext(ohlc);
+                        ohlc = new OHLC(tck);
+                    }
+                    else
+                        ohlc.Add(tck);
+                }, obs.OnError, obs.OnCompleted);
+            });
+        }
     }
 }

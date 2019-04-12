@@ -7,25 +7,38 @@ using System.Text;
 
 namespace quant.core
 {
-    public static class OHLCExt
+    /// <summary>
+    /// Common Reactive Extensions
+    /// </summary>
+    public static class ReactExt
     {
         /// <summary>
-        /// This is for Stitch
+        /// Filters the input stream based on stream of filter inputs
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="obsTick"></param>
+        /// <param name="fltr"></param>
         /// <returns></returns>
-        static IObservable<IList<OHLC>> OHLC(this IObservable<IObservable<Tick>> source)
-        {
-            return source.SelectMany(p => p.Aggregate((OHLC)null,
-                (ohlc, td) => {
-                    if (ohlc == null)
-                        ohlc = new OHLC(td);
-                    else
-                        ohlc.Add(td);
-                    return ohlc;
-                })).ToList();
+        public static IObservable<Tick> Where(this IObservable<Tick> source, IObservable<Security> fltr) {
+            object lck = new object();
+            Security latest = null;
+            return Observable.Create<Tick>(obs => {
+                var ret = new CompositeDisposable();
+                // capture the latest filter value
+                ret.Add(fltr.Subscribe(val => { latest = val; }));
+                // pass through only which matches the latest filter value
+                ret.Add(source.Where(tk=> tk.Security == latest).Subscribe(obs));
+                return ret;
+            });
         }
-        internal static IObservable<IObservable<TSource>> Slice<TKey, TSource>(this IObservable<TSource> source, Func<TSource, TKey> keySelector)
+        /// <summary>
+        /// replacement to System.Reactive.Window
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="keySelector"></param>
+        /// <returns></returns>
+        public static IObservable<IObservable<TSource>> Slice<TKey, TSource>(this IObservable<TSource> source, Func<TSource, TKey> keySelector)
         {
             return source.Publish(xs => xs.GroupByUntil(k => keySelector(k), g => {
                 return xs.Where(x => !EqualityComparer<TKey>.Default.Equals(keySelector(x), g.Key));
@@ -40,7 +53,7 @@ namespace quant.core
         /// <param name="source"></param>
         /// <param name="bound"></param>
         /// <returns></returns>
-        internal static IObservable<IObservable<TSource>> Slice<TWindowBoundary, TSource>(this IObservable<TSource> source, IObservable<TWindowBoundary> bound)
+        public static IObservable<IObservable<TSource>> Slice<TWindowBoundary, TSource>(this IObservable<TSource> source, IObservable<TWindowBoundary> bound)
         {
             object lck = new object();
             Subject<TSource> ot = null;
@@ -67,21 +80,5 @@ namespace quant.core
             });
 //            return source.Window(bound);
         }
-        public static IObservable<IList<OHLC>> Bucket_1(this IObservable<Tick> source, TimeSpan period)
-        {
-            return source.Slice(x => x.TradedAt.Ticks / period.Ticks)
-                .SelectMany(grp => grp.GroupBy(tk => tk.Security.Symbol).OHLC());
-        }
-        public static IObservable<IList<OHLC>> Bucket_2(this IObservable<Tick> source, TimeSpan period)
-        {
-            return source.Publish(xs => {
-                var bound = xs.Select(x => x.TradedAt.Ticks / period.Ticks).DistinctUntilChanged();
-                return xs.Slice(bound);
-            }).SelectMany(grp => grp.GroupBy(tk => tk.Security.Symbol).OHLC());
-        }
-        public static IObservable<IList<OHLC>> Bucket_2(this IObservable<IObservable<Tick>> source, TimeSpan period)
-        {
-            return source.SelectMany(x => x).Bucket_2(period);
-        }
-    }
+   }
 }

@@ -10,6 +10,7 @@ namespace quant.core
     public class Security : IEquatable<Security>
     {
         #region static
+        static object _lck = new object();
         static string codes = "_FGHJKMNQUVXZ";
         static Dictionary<string, Security> _prds = new Dictionary<string, Security>();
         /// <summary>
@@ -20,8 +21,13 @@ namespace quant.core
         /// <returns></returns>
         public static Security Lookup(string sym, uint id=0) {
             _prds.TryGetValue(sym, out Security sec);
-            if (sec == null)
-                _prds[sym] = sec = new Security(sym, id);
+            if (sec == null) {
+                lock (_lck) {
+                    _prds.TryGetValue(sym, out sec);
+                    if (sec == null)
+                        _prds[sym] = sec = new Security(sym, id);
+                }
+            }
             return sec;
         }
         #endregion

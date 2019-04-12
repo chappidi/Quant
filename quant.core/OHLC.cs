@@ -116,7 +116,7 @@ namespace quant.core
     public static class OHLCExt
     {
         /// <summary>
-        /// OHLC Generation from source till OnComplete is called
+        /// Aggregates all the Ticks and creates OHLC bar
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
@@ -132,16 +132,17 @@ namespace quant.core
                 });
         }
         /// <summary>
-        /// generate stream of OHLC on continuous pricing source
+        /// Aggregates the ticks until the boundary Selector to create OHLC bar
+        /// and starts a new OHLC
         /// </summary>
         /// <param name="source"></param>
-        /// <param name="durationSelector"></param>
+        /// <param name="boundarySelector"></param>
         /// <returns></returns>
-        internal static IObservable<OHLC> OHLC(this IObservable<Tick> source, Func<OHLC, Tick, bool> durationSelector) {
+        internal static IObservable<OHLC> OHLC(this IObservable<Tick> source, Func<OHLC, Tick, bool> boundarySelector) {
             return Observable.Create<OHLC>(obs => {
                 OHLC ohlc = null;
                 return source.Subscribe((tck) => {
-                    if (ohlc == null || durationSelector(ohlc, tck)) {
+                    if (ohlc == null || boundarySelector(ohlc, tck)) {
                         if(ohlc != null)
                             obs.OnNext(ohlc);
                         ohlc = new OHLC(tck);
@@ -150,30 +151,6 @@ namespace quant.core
                         ohlc.Add(tck);
                 }, obs.OnError, obs.OnCompleted);
             });
-        }
-        /// <summary>
-        /// Utility function : can be moved where Bucket() code exists
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IObservable<IList<OHLC>> OHLC(this IObservable<IObservable<Tick>> source)  {
-            return source.SelectMany(x => x.OHLC()).ToList();
-        }
-        /// <summary>
-        /// replaced by above function
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IObservable<IList<OHLC>> OHLC_OLD(this IObservable<IObservable<Tick>> source)
-        {
-            return source.SelectMany(p => p.Aggregate((OHLC)null,
-                (ohlc, td) => {
-                    if (ohlc == null)
-                        ohlc = new OHLC(td);
-                    else
-                        ohlc.Add(td);
-                    return ohlc;
-                })).ToList();
         }
     }
 }

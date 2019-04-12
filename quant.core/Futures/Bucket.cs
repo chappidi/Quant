@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using quant.core;
+
+[assembly: InternalsVisibleTo("quant.data.test")]
 
 namespace quant.futures
 {
     public static class BucketExt
     {
+        /// <summary>
+        /// Utility function : can be moved where Bucket() code exists
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        static IObservable<IList<OHLC>> OHLC(this IObservable<IObservable<Tick>> source)  {
+            return source.SelectMany(x => x.OHLC()).ToList();
+        }
         internal static IObservable<IList<OHLC>> Bucket_V1(this IObservable<Tick> source, TimeSpan period)
         {
             return source.Slice(x => x.TradedAt.Ticks / period.Ticks)

@@ -40,7 +40,7 @@ namespace quant.futures
         /// <param name="factor"></param>
         /// <returns></returns>
         public static IObservable<Tick> Stitch(this IObservable<Tick> source, TimeSpan timeSpan, uint tgtVol, double factor) {
-            return source.Publish(obs => obs.Where(obs.Bucket_1(timeSpan).Roll(tgtVol, factor).Select(x => x.Item1)));
+            return source.Publish(obs => obs.Where(obs.Bucket_V1(timeSpan).Roll(tgtVol, factor).Select(x => x.Item1)));
         }
         public static IObservable<Tick> Stitch(this IObservable<IObservable<Tick>> source, TimeSpan timeSpan, uint tgtVol, double factor) {
             return source.SelectMany(x => x).Stitch(timeSpan, tgtVol, factor);
@@ -53,7 +53,7 @@ namespace quant.futures
         /// <param name="timeSpan"></param>
         /// <returns></returns>
         public static IObservable<Tick> Stitch(this IObservable<Tick> source, TimeSpan timeSpan, double factor = 1.1) {
-            return source.Publish(obs => obs.Where(obs.Bucket_1(timeSpan).Roll(new TimeSpan(09, 0, 0), new TimeSpan(13, 45, 0), factor).Select(x => x.Item1)));
+            return source.Publish(obs => obs.Where(obs.Bucket_V1(timeSpan).Roll(new TimeSpan(09, 0, 0), new TimeSpan(13, 45, 0), factor).Select(x => x.Item1)));
         }
         public static IObservable<Tick> Stitch(this IObservable<IObservable<Tick>> source, TimeSpan timeSpan, double factor = 1.1) {
             return source.SelectMany(x => x).Stitch(timeSpan,factor);

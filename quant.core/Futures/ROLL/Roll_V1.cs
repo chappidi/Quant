@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using quant.core;
 
-namespace quant.core
+namespace quant.futures
 {
     /// <summary>
     /// identify the contract roll based on minVolume, volume Increment

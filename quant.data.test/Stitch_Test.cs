@@ -47,7 +47,7 @@ namespace quant.data.test
         {
             DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
             var src = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30))
-                .Bucket_1(TimeSpan.FromMinutes(5)).Select(x => { return x[0]; });
+                .ByInterval(TimeSpan.FromMinutes(5));
             // filter any data before dtStart
             src.Subscribe(x => Trace.WriteLine(x));
         }
@@ -56,7 +56,7 @@ namespace quant.data.test
         {
             DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
             var src = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30), 10000, 1.2)
-                .Bucket_1(TimeSpan.FromMinutes(5)).Select(x => { return x[0]; });
+                .ByInterval(TimeSpan.FromMinutes(5));
             // filter any data before dtStart
             src.Subscribe(x => Trace.WriteLine(x));
         }

@@ -17,7 +17,7 @@ namespace quant.data.test
             var timeSpan = TimeSpan.FromHours(1);
             var source = new Subscription(prdt, Resolution.Tick).Query(dtStart, dtStart.AddDays(1)).ToObservable();
             var abc = source.Publish(src => {
-                return src.Bucket_2(timeSpan);
+                return src.Bucket_V2(timeSpan);
             });
             abc.Take(100).Subscribe(lt => {
                 foreach (var itm in lt) {
@@ -32,7 +32,7 @@ namespace quant.data.test
             var timeSpan = TimeSpan.FromHours(1);
             var source = new Subscription(prdt, Resolution.Tick).QueryX(dtStart, dtStart.AddDays(1));
             var abc = source.Publish(src => {
-                return src.Bucket_2(timeSpan);
+                return src.Bucket_V2(timeSpan);
             });
             abc.Take(100).Subscribe(lt => {
                 foreach (var itm in lt)

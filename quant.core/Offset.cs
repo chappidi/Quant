@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
-using quant.core;
 
 namespace quant.core
 {

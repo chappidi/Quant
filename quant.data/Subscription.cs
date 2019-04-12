@@ -3,6 +3,7 @@ using quant.core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace quant.data
@@ -60,10 +61,25 @@ namespace quant.data
             });
         }
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtFrom"></param>
+        /// <param name="dtTo"></param>
+        /// <returns></returns>
         public IEnumerable<Tick> Query(DateTime dtFrom, DateTime dtTo) {
             return Enumerable.Range(0, (dtTo - dtFrom).Days).Select(t => dtFrom.AddDays(t))
                 .AsParallel().AsOrdered().WithDegreeOfParallelism(2)
                 .Select(dt => Query(dt)).SelectMany(x => x);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtFrom"></param>
+        /// <param name="dtTo"></param>
+        /// <returns></returns>
+        public IObservable<IGroupedObservable<Security, Tick>> QueryX(DateTime dtFrom, DateTime dtTo)
+        {
+            return Query(dtFrom, dtTo).ToObservable().GroupBy(tk => tk.Security);
         }
     }
 }

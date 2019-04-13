@@ -70,23 +70,31 @@ namespace quant.core
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
         public void Add(Tick tck) {
-            // update High and Low
-            if (High.Price < tck.Price) 
-                High = tck;
-            else if (Low.Price > tck.Price) 
-                Low = tck;
-
-            // security roll
+            // check if security rolled
             if(tck.Security != Close.Security) {
                 // find the offset
                 var diff = (int)(tck.Price - Close.Price);
                 // increment offset if there are multiple rolls
                 Offset += diff;
-                // adjust pxVol to reflect continuous pricing
+                // adjust the upto date PxVol to reflect continuous pricing
                 PxVol += Volume * diff;
             }
             // update Close
             Close = tck;
+
+            var ofst = 0;
+            // update High and Low
+            if(High.Security != tck.Security) {
+                ofst = Offset;
+            } 
+            if (High.Price + ofst < tck.Price)
+                High = tck;
+            ofst = 0;
+            if (Low.Security != tck.Security)
+                ofst = Offset;
+            if (Low.Price + ofst > tck.Price)
+                Low = tck;
+
             // update stats
             updateStats(tck);
         }
@@ -149,7 +157,7 @@ namespace quant.core
                     }
                     else
                         ohlc.Add(tck);
-                }, obs.OnError, obs.OnCompleted);
+                }, obs.OnError, () => { obs.OnNext(ohlc); obs.OnCompleted(); });
             });
         }
     }

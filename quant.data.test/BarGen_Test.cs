@@ -26,11 +26,45 @@ namespace quant.data.test
             data.ByVolume(10000).Subscribe(x => Trace.WriteLine(x));
         }
         [TestMethod]
+        public void Price_1()
+        {
+            DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
+            var data = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30), 10000, 1.2);
+            data.ByPrice_V1(100).Subscribe(x => Trace.WriteLine(x));
+        }
+        [TestMethod]
+        public void Price_2()
+        {
+            DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
+            var data = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30), 10000, 1.2);
+            data.ByPrice_V2(100).Subscribe(x => Trace.WriteLine(x));
+        }
+        [TestMethod]
         public void Price()
         {
             DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
             var data = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30), 10000, 1.2);
-            data.ByPrice(100).Subscribe(x => Trace.WriteLine(x));
+            data.Publish(sc => {
+                sc.ByPrice_V1(10).Subscribe(x => Trace.WriteLine($"A:{x}"));
+                sc.ByPrice_V2(10).Subscribe(x => Trace.WriteLine($"B:{x}"));
+                return sc;
+            }).Subscribe(x => { });
+        }
+        [TestMethod]
+        public void Perf_Test()
+        {
+            DateTime dtFrom = DateTime.Parse("2017-May-15 00:00:01");
+            var data = new Subscription("CL", Resolution.Tick).Query(dtFrom, dtFrom.AddDays(5)).ToObservable().Stitch(TimeSpan.FromMinutes(30), 10000, 1.2).ToList().Wait();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var cnt = data.ToObservable().ByPrice_V1(10).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
+            sw = new Stopwatch();
+            sw.Start();
+            cnt = data.ToObservable().ByPrice_V2(10).Count().Wait();
+            sw.Stop();
+            Trace.WriteLine($"{sw.ElapsedMilliseconds}\t{cnt}");
         }
     }
 }

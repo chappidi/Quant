@@ -28,9 +28,11 @@ namespace quant.rx
             });
         }
         public static IObservable<OHLC> MVWAP(this IObservable<Tick> source, uint period, uint range) {
-            return source.Publish(src => {
-                var bound = src.MVWAP(period).Range(range, src.Offset());
-                return src.Slice(bound).SelectMany(x => x.OHLC());
+            return source.Publish(sr => {
+                var bound = sr.MVWAP(period).Range(range, sr.Offset());
+                //should I use Slice or Window ??
+//                return src.Window(bound).SelectMany(x => x.OHLC());
+                return sr.Slice(bound).SelectMany(x => x.OHLC());
             });
         }
     }

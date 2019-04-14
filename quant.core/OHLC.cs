@@ -55,12 +55,12 @@ namespace quant.core
         public DateTime Seed { get; set; }
         public Color FillColor => (Close.Price == Open.Price) ? Color.NA : (Close.Price > Open.Price) ? Color.Black : Color.Red;
         #endregion
-        public (int hr, int tr, int lr) DM(OHLC prev)
+        public virtual (int hr, int tr, int lr) DM(OHLC prev)
         {
             // To do adjust for Roll
             return ((int)(this.High.Price - prev.High.Price), (int)TR(prev), (int)(prev.Low.Price - this.Low.Price));
         }
-        public long TR(OHLC prev)
+        public virtual long TR(OHLC prev)
         {
             // To do check the logic
             // adjusted for Roll.
@@ -69,7 +69,7 @@ namespace quant.core
             var low_prevclose = Math.Abs(this.Low.Price - adj_prevClose);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));
         }
-        public void Add(Tick tck) {
+        public virtual void Add(Tick tck) {
             // check if security rolled
             if(tck.Security != Close.Security) {
                 // find the offset
@@ -98,7 +98,7 @@ namespace quant.core
             // update stats
             updateStats(tck);
         }
-        public int get_Offset(OHLC old) {
+        public virtual int get_Offset(OHLC old) {
 
             int retVal = Offset;
             // roll happened at end of bar and bar includes multiple contracts 
@@ -106,7 +106,7 @@ namespace quant.core
                 retVal += (int)(this.Open.Price - old.Close.Price);
             return retVal;
         }
-        public int get_Offset(Tick old) {
+        public virtual int get_Offset(Tick old) {
             int retVal = Offset;
             // roll happened at end of bar and bar includes multiple contracts 
             if (old != null && old.Security != this.Open.Security)

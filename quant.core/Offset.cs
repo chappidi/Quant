@@ -40,7 +40,7 @@ namespace quant.core
                     }
                     prevVal = ohlc.Close;
                 });
-            });
+            }); 
         }
     }
 }

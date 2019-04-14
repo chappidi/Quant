@@ -17,6 +17,7 @@ namespace quant.core
         /// <returns></returns>
         public static IObservable<uint> Range(this IObservable<double> source, double range, IObservable<double> offset = null)
         {
+            object lck = new object();
             double maxVal = double.MinValue;
             double minVal = double.MaxValue;
             return Observable.Create<uint>(obs => {
@@ -24,17 +25,21 @@ namespace quant.core
                 // if offset is provided
                 if(offset != null) {
                     ret.Add(offset.Subscribe(ofst => {
-                        maxVal += ofst;
-                        minVal += ofst;
+                        lock (lck) {
+                            maxVal += ofst;
+                            minVal += ofst;
+                        }
                     }));
                 }
                 ret.Add(source.Subscribe(val => {
-                    maxVal = Math.Max(val, maxVal);
-                    minVal = Math.Min(val, minVal);
-                    if (maxVal - minVal >= range) {
-                        obs.OnNext(1);
-                        maxVal = double.MinValue;
-                        minVal = double.MaxValue;
+                    lock (lck) {
+                        maxVal = Math.Max(val, maxVal);
+                        minVal = Math.Min(val, minVal);
+                        if (maxVal - minVal >= range) {
+                            obs.OnNext(1);
+                            maxVal = double.MinValue;
+                            minVal = double.MaxValue;
+                        }
                     }
                 }));
                 return ret;

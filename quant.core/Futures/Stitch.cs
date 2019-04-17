@@ -5,7 +5,7 @@ using System.Reactive.Linq;
 using System.Text;
 using quant.core;
 
-namespace quant.futures
+namespace quant.core.futures
 {
     /// <summary>
     /// extension functions to provide continuous pricing data for futures.

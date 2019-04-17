@@ -7,7 +7,7 @@ using quant.core;
 
 [assembly: InternalsVisibleTo("quant.data.test")]
 
-namespace quant.futures
+namespace quant.core.futures
 {
     public static class BucketExt
     {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using quant.core;
+using quant.core.futures;
 
 namespace quant.data.test
 {
@@ -15,7 +16,7 @@ namespace quant.data.test
         public void OHLC_TIME_1()
         {
             var timeSpan = TimeSpan.FromHours(1);
-            var source = new Subscription(prdt, Resolution.Tick).Query(dtStart, dtStart.AddDays(1)).ToObservable();
+            var source = DataSource.Query("CL", dtStart, dtStart.AddDays(1), obs => obs);
             var abc = source.Publish(src => {
                 return src.Bucket_V2(timeSpan);
             });
@@ -30,7 +31,7 @@ namespace quant.data.test
         public void OHLC_TIME_2()
         {
             var timeSpan = TimeSpan.FromHours(1);
-            var source = new Subscription(prdt, Resolution.Tick).QueryX(dtStart, dtStart.AddDays(1));
+            var source = DataSource.QueryX(prdt, dtStart, dtStart.AddDays(1));
             var abc = source.Publish(src => {
                 return src.Bucket_V2(timeSpan);
             });

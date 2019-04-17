@@ -17,6 +17,7 @@ namespace quant.core
         /// <returns></returns>
         public static IObservable<uint> Range(this IObservable<double> source, double range, IObservable<double> offset = null)
         {
+            object lck = new object();
             double maxVal = double.MinValue;
             double minVal = double.MaxValue;
             return Observable.Create<uint>(obs => {
@@ -24,44 +25,50 @@ namespace quant.core
                 // if offset is provided
                 if(offset != null) {
                     ret.Add(offset.Subscribe(ofst => {
-                        maxVal += ofst;
-                        minVal += ofst;
+                        lock (lck) {
+                            maxVal += ofst;
+                            minVal += ofst;
+                        }
                     }));
                 }
                 ret.Add(source.Subscribe(val => {
-                    maxVal = Math.Max(val, maxVal);
-                    minVal = Math.Min(val, minVal);
-                    if (maxVal - minVal >= range) {
-                        obs.OnNext(1);
-                        maxVal = double.MinValue;
-                        minVal = double.MaxValue;
+                    lock (lck) {
+                        maxVal = Math.Max(val, maxVal);
+                        minVal = Math.Min(val, minVal);
+                        if (maxVal - minVal >= range) {
+                            obs.OnNext(1);
+                            maxVal = double.MinValue;
+                            minVal = double.MaxValue;
+                        }
                     }
                 }));
                 return ret;
             });
         }
 
-        public static IObservable<OHLC> ByPrice(this IObservable<Tick> source, uint range) {
+        public static IObservable<OHLC> ByPrice_V1(this IObservable<Tick> source, uint range) {
             return source.OHLC((oh, tck) => {
-                // take care of roll. 
-                //TODO: Need to be tested.
                 long high = oh.High.Price;
                 long low = oh.Low.Price;
                 var ofst = oh.Offset;
                 // take care of offset 
-                if (oh.Close.Security != tck.Security)
+                if (oh.Close.Security != tck.Security) {
                     ofst += (int)(tck.Price - oh.Close.Price);
-                if (oh.High.Security != tck.Security)
+                }
+                if (oh.High.Security != tck.Security) {
                     high += ofst;
-                if (oh.Low.Security != tck.Security)
+                }
+                if (oh.Low.Security != tck.Security) {
                     low += ofst;
+                }
                 return (high - low >= range);
             });
         }
-        public static IObservable<OHLC> ByPriceX(this IObservable<Tick> source, uint range) {
+        public static IObservable<OHLC> ByPrice_V2(this IObservable<Tick> source, uint range) {
             return source.Publish(src => {
-//                return src.Slice(src.Select(x => (double)x.Price).Range(range, src.Offset())).OHLC();
-                return src.Slice(src.Select(x => (double)x.Price).Range(range, src.Offset())).SelectMany(x => x.OHLC());
+                var bound = src.Select(x => (double)x.Price).Range(range, src.Offset());
+                // cannot use slice, use Window
+                return src.Window(bound).SelectMany(x => x.OHLC());
             });
         }
         /// <summary>

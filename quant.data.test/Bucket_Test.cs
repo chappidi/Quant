@@ -18,7 +18,7 @@ namespace quant.data.test
         public void BUCKET_TEST_1()
         {
             var timeSpan = TimeSpan.FromHours(1);
-            var source = new Subscription(prdt, Resolution.Tick).Query(dtStart, dtStart.AddDays(1)).ToObservable();
+            var source = DataSource.Query(prdt, dtStart, dtStart.AddDays(1), obs=> obs);
             var abc = source.Publish(src => {
                 src.Bucket_V1(timeSpan).Subscribe(lt => {
                     foreach (var itm in lt) {
@@ -40,7 +40,7 @@ namespace quant.data.test
         public void Perf_Test()
         {
             var timeSpan = TimeSpan.FromHours(1);
-            var data = new Subscription(prdt, Resolution.Tick).Query(dtStart, dtStart.AddDays(10)).ToObservable().ToList().Wait();
+            var data = DataSource.Query(prdt, dtStart, dtStart.AddDays(10)).ToList().Wait();
             Stopwatch sw = new Stopwatch();
             sw.Start();
             var cnt = data.ToObservable().Bucket_V1(timeSpan).Count().Wait();

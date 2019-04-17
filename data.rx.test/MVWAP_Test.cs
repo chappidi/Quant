@@ -22,7 +22,7 @@ namespace quant.data.test
             // query raw data. we need some buffer to figure inital roll (contract) before the dtStart.
             // this is similar to TestRollOnlyDate
             // Stitch contract Roll with the conditions to roll. 
-            var src = new Subscription(prdt, Resolution.Tick).Query(dtStart.AddDays(-2), dtEnd).ToObservable().Stitch(TimeSpan.FromMinutes(30), 1000, 1.2).Where(x => x.Side != Aggressor.NA);
+            var src = DataSource.Query(prdt, dtStart, dtEnd, obs => obs.Stitch(TimeSpan.FromMinutes(30), 1000, 1.2)).Where(x => x.Side != Aggressor.NA);
             // filter any data before dtStart
             src.Where(x => x.TradedAt >= dtStart).MVWAP(10000, 250).Subscribe(oh => { Trace.WriteLine(oh); });
         }

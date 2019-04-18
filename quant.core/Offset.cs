@@ -18,7 +18,7 @@ namespace quant.core
             return Observable.Create<double>(obs => {
                 return source.Subscribe(newVal => {
                     if (prevVal != null && prevVal.Security != newVal.Security) {
-                        obs.OnNext(newVal.Price - prevVal.Price);
+                        obs.OnNext((int)(newVal.Price - prevVal.Price));
                     }
                     prevVal = newVal;
                 });

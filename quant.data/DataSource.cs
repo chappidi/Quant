@@ -10,6 +10,12 @@ namespace quant.data
     public static class DataSource
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prdt"></param>
+        /// <returns></returns>
+        public static IEnumerable<(string, DateTime)> Query(string prdt) => ISubscription.Query(prdt);
+        /// <summary>
         /// continuous Pricing.
         /// 1. prices are adjusted for roll
         /// 2. single symbol for all ticks

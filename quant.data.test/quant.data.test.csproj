@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\quant.data\quant.data.csproj" />
+    <ProjectReference Include="..\quant.rx\quant.rx.csproj" />
   </ItemGroup>
 
 </Project>

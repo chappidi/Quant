@@ -22,7 +22,7 @@ namespace quant.core
     /// <summary>
     /// represents tick data of a given Security
     /// </summary>
-    public class Tick : ITick
+    public class Tick
     {
         #region ctor
         /// <summary>

@@ -13,7 +13,7 @@ namespace quant.core
     /// Offset represents the Offset between the roll of the securities
     /// Offset == 0 if Open.Security == Close.Security
     /// </summary>
-    public class OHLC : IOHLC<Tick>
+    public class OHLC
     {
         /// <summary>
         /// update count, volume and pxVol

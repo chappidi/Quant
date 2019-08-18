@@ -64,7 +64,7 @@ namespace quant.core
         {
             // To do check the logic
             // adjusted for Roll.
-            var adj_prevClose = prev.Close.Price + Offset;
+            var adj_prevClose = prev.Close.Price + get_Offset(prev.Close);
             var high_prevclose = Math.Abs(this.High.Price - adj_prevClose);
             var low_prevclose = Math.Abs(this.Low.Price - adj_prevClose);
             return Math.Max(this.Range, Math.Max(low_prevclose, high_prevclose));

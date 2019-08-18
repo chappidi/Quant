@@ -20,6 +20,12 @@ namespace quant.data
             { "ES",  100},  { "NQ",   100}, { "CL",   100},
             { "SI", 1000},  { "HG", 10000}, { "6B", 10000}
         };
+        public static IEnumerable<(string, DateTime)> Query(string prdt) {
+            string sql = $@" SELECT endtime, symbol FROM boundaries 
+                    WHERE productgroup = '{prdt}' AND generic = 1 AND rolltime_eastern = '12:30:00' 
+                    AND starttime <= '{DateTime.Now}'::TIMESTAMP AT TIME ZONE 'America/New_York' ORDER BY starttime";
+            return pgCS.Query(new NpgsqlCommand(sql)).Select(rdr => (Convert.ToString(rdr[1]), (DateTime)rdr[0]));
+        }
         protected abstract IEnumerable<Tick> Query(DateTime dt);
         public IObservable<Tick> Query(DateTime dtFrom, DateTime dtTo) {
             return Enumerable.Range(0, (dtTo - dtFrom).Days).Select(t => dtFrom.AddDays(t))
